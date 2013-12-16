@@ -24,9 +24,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan::Base
       match /^\d+\s(\S+)/
       cmd 'show vlan'
       add do |transport, value|
-        Puppet.debug "Executing vlan name command with value #{value}"
         transport.command("name #{value}")
-        Puppet.debug "Executing vlan name command - completed"
       end
       remove { |*_| }
     end

@@ -46,7 +46,6 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ScopedValue < Puppe
 
   def parse(txt)
     result = extract_scope(txt)
-    Puppet.debug("result is #{result}")
     if result.nil? || result.empty?
       Puppet.debug("Scope #{scope} not found for Param #{name}")
       return

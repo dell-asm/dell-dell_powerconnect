@@ -16,7 +16,6 @@ class Puppet::Util::NetworkDevice::Transport::Base_transport
   end
 
   def command(cmd, options = {})
-    Puppet.debug "cmd is : #{cmd}"
     noop = options[:noop].nil? ? Puppet[:noop] : options[:noop]
     if options[:cache]
       return @cache[cmd] if @cache[cmd]

@@ -35,13 +35,12 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util
   def perform_update(is, should)
     case @params[:ensure].value
     when :present
-      transport.command("vlan #{name}", :prompt => /\(config-vlan\)#\s?\z/n)
+      transport.command("vlan #{name}", :prompt => /\(config-vlan#{name}\)#\s?\z/n)
       Puppet::Util::NetworkDevice::Sorter.new(@params).tsort.each do |param|
         # We dont want to change undefined values
         next if should[param.name] == :undef || should[param.name].nil?
         # Skip the ensure property
         next if param.name == :ensure
-    Puppet.debug "parameter name is #{param.name}"
         param.update(@transport, is[param.name]) unless is[param.name] == should[param.name]
       end
       transport.command("exit")
