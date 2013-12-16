@@ -1,0 +1,34 @@
+{
+  "name": "ASM-dell_powerconnect",
+  "version": "0.1.0",
+  "summary": "Network device extensions for Dell PowerConnect",
+  "author": "",
+  "description": "Dell PowerConnect configuration module",
+  "dependencies": [],
+  "types": [
+    {
+      "properties": [
+        {
+          "name": "desc"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "name"
+        }
+      ],
+      "providers": [
+        {
+          "name": "dell_powerconnect",
+          "doc": "Dell PowerConnect switch provider for VLAN configuration."
+        }
+      ],
+      "name": "powerconnect_vlan",
+      "doc": "This represents a VLAN configuration on a Dell PowerConnect switch."
+    }
+  ],
+  "checksums": {},
+  "source": "",
+  "project_page": "",
+  "license": ""
+}
