@@ -125,38 +125,38 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd "show vlan"      
     end
     
-    base.register_param 'vlan_attributes' do
-      res = Hash.new
-      match do |txt|
-        i = 0
-        lineNum = 0
-        txt.each_line do |line|
-          if lineNum > 3 then
-            confvlans = base.facts['vlan'].value.split(',')
-            numbered_lines = line.scan(/[0-9]\s+(.+)/).flatten.compact
-            if numbered_lines[0].to_s != '' then
-              line.scan(/[0-9]\s+(.+)/) do |item|            
-                attributes = item[0].gsub(/[ \r\t\n]+/, ' ').strip.split(' ')
-                res["vlan_"+confvlans[i]+"_attributes"] = "name = "+attributes[0]+" , "+"type = "+attributes[2]
-                res["vlan_"+confvlans[i]+"_Ports"] = attributes[1]     
-                i = i+1      
-              end  
-            else
-              justports = line.gsub(/[ \r\t\n]+/, ' ').strip
-              if justports.count('#') == 0 then 
-                res["vlan_"+confvlans[i-1]+"_Ports"] = res["vlan_"+confvlans[i-1]+"_Ports"] + justports
-              end
-            end            
-            lineNum = lineNum +1
-          else
-            lineNum = lineNum + 1
-          end 
-
-        end
-        res
-      end      
-      cmd "show vlan"      
-    end
+#    base.register_param 'vlan_attributes' do
+#      res = Hash.new
+#      match do |txt|
+#        i = 0
+#        lineNum = 0
+#        txt.each_line do |line|
+#          if lineNum > 3 then
+#            confvlans = base.facts['vlan'].value.split(',')
+#            numbered_lines = line.scan(/[0-9]\s+(.+)/).flatten.compact
+#            if numbered_lines[0].to_s != '' then
+#              line.scan(/[0-9]\s+(.+)/) do |item|            
+#                attributes = item[0].gsub(/[ \r\t\n]+/, ' ').strip.split(' ')
+#                res["vlan_"+confvlans[i]+"_attributes"] = "name = "+attributes[0]+" , "+"type = "+attributes[2]
+#                res["vlan_"+confvlans[i]+"_Ports"] = attributes[1]     
+#                i = i+1      
+#              end  
+#            else
+#              justports = line.gsub(/[ \r\t\n]+/, ' ').strip
+#              if justports.count('#') == 0 then 
+#                res["vlan_"+confvlans[i-1]+"_Ports"] = res["vlan_"+confvlans[i-1]+"_Ports"] + justports
+#              end
+#            end            
+#            lineNum = lineNum +1
+#          else
+#            lineNum = lineNum + 1
+#          end 
+#
+#        end
+#        res
+#      end      
+#      cmd "show vlan"      
+#    end
 
     base.register_param 'Active_Software_Version' do
       match do |txt|
