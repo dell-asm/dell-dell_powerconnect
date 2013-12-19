@@ -8,13 +8,5 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch::Base
 
     base.register_model(:vlan, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan, /^(\d+)\s\S+/, 'show vlan')
 
-    if base.facts && base.facts['canonicalized_hardwaremodel'] == 'c4500'
-      base.register_new_module('c4500', 'hardware')
-    end
-
-    if base.facts && base.facts['canonicalized_hardwaremodel'] == 'c2960'
-      base.register_new_module('c2960', 'hardware')
-    end
-
   end
 end

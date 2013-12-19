@@ -2,6 +2,8 @@ require 'puppet/util/network_device/dsl'
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/sorter'
 
+# The Base model which is extended by model classes
+# for each puppet type
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   include Puppet::Util::NetworkDevice::Dsl

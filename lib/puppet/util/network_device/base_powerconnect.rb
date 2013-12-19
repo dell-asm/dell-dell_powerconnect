@@ -4,6 +4,9 @@ require 'cgi'
 require 'puppet/util/network_device/transport'
 require 'puppet/util/network_device/transport/base_transport'
 
+# Base class which provides transport initialization
+# based on the information provided in device.conf file
+#
 class Puppet::Util::NetworkDevice::Base_powerconnect
   attr_accessor :url, :transport, :crypt
 

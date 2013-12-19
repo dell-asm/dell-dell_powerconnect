@@ -2,6 +2,8 @@ require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/base'
 require 'puppet/util/network_device/dell_powerconnect/model/scoped_value'
 
+#Represents the implementation for VLAN puppet type.
+#Provides the operations for managing the state of parameters.
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   attr_reader :params, :name

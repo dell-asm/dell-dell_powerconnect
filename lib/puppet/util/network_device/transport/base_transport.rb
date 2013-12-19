@@ -13,7 +13,7 @@ class Puppet::Util::NetworkDevice::Transport::Base_transport
   end
 
   def expect(prompt)
-  end
+  end 
 
   def command(cmd, options = {})
     noop = options[:noop].nil? ? Puppet[:noop] : options[:noop]

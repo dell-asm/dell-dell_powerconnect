@@ -6,11 +6,13 @@ Puppet::Type.newtype(:powerconnect_vlan) do
   ensurable
 
   newparam(:name) do
+    @doc = "The VLAN Id"
     isnamevar
     newvalues(/^\d+$/)
   end
 
-  newproperty(:desc) do
-    newvalues(/^\S+$/)
+  newproperty(:vlan_name) do
+    @doc = "Name of the VLAN (optional)"
+    #newvalues(/^\S+$/)
   end
 end

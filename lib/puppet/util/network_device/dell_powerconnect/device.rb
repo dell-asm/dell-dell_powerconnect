@@ -5,6 +5,8 @@ require 'puppet/util/network_device/dell_powerconnect/facts'
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/switch'
 
+# Models the Dell PowerConnect switch resource. Initializes
+# the switch connectivity and loads the facts related to it.
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::NetworkDevice::Base_powerconnect
 
   attr_accessor :enable_password, :switch
@@ -23,7 +25,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
   def connect_transport
     transport.connect
     login
-    transport.command("en")
+    enable
     transport.command("terminal length 0", :noop => false)
   end
 
@@ -39,8 +41,9 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
 
   def enable
     raise "Can't issue \"enable\" to enter privileged, no enable password set" unless enable_password
-    transport.command("enable", {:prompt => /^Password:/, :noop => false})
-    transport.command(enable_password, :noop => false)
+    transport.command("enable", {:noop => false}) do |out|
+      transport.command(enable_password, :noop => false) if out = /^Password:/
+    end
   end
 
   def init

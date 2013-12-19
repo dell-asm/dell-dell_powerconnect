@@ -2,6 +2,8 @@ require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/value_helper'
 require 'puppet/util/monkey_patches_powerconnect'
 
+#Value class which provides basic functions for managing 
+#parameter state change
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
   attr_accessor :name, :transport, :facts, :idx, :value, :evaluated
   extend Puppet::Util::NetworkDevice::ValueHelper
