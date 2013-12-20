@@ -1,4 +1,5 @@
 require 'puppet/util/network_device/dell_powerconnect/possible_facts'
+require 'json'
 
 module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
   def self.register(base)
@@ -124,6 +125,72 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       end      
       cmd "show vlan"      
     end
+    
+    base.register_param 'vlandata' do
+      res = Hash.new
+      vlan_data = Hash.new
+      vlan_attrs_global = Hash.new
+      match do |txt|
+        i = 0
+        lineNum = 0
+        newvlan = true
+        txt.each_line do |line|
+          if lineNum > 3 then
+            confvlans = base.facts['vlan'].value.split(',')
+            numbered_lines = line.scan(/[0-9]\s+(.+)/).flatten.compact
+            if numbered_lines[0].to_s != '' then
+              vlan_attrs = Hash.new
+              vlan_data[confvlans[i].to_s] = vlan_attrs 
+              line.scan(/[0-9]\s+(.+)/) do |item|            
+                attributes = item[0].gsub(/[ \r\t\n]+/, ' ').strip.split(' ')
+                vlan_attrs["name"] = attributes[0]
+                vlan_attrs["type"] = attributes[2]
+                vlan_attrs["ports"] = attributes[1]
+                vlan_attrs_global = vlan_attrs    
+                i = i+1      
+              end  
+            else
+              justports = line.gsub(/[ \r\t\n]+/, ' ').strip
+              if justports.count('#') == 0 then 
+                vlan_attrs_global["ports"] = vlan_attrs_global["ports"] + justports
+              end
+            end            
+            lineNum = lineNum +1
+          else
+            lineNum = lineNum + 1
+          end 
+
+        end
+        res["vlandata"] = vlan_data.to_json
+        res
+      end      
+      cmd "show vlan"  
+    end
+    
+    
+    base.register_param 'interfacedata' do
+      res = Hash.new
+      interface_data = Hash.new
+      match do |txt|
+        txt.scan(/^interface ((Gi|Te)[0-9\/]+)\n(description (.*)\n)?(channel-group (.*)\n)?(shutdown\n)?(spanning-tree (.*)\n)?mtu (.*)\n(switchport mode (.*)\n)?(switchport (.*) allowed vlan add (.*) tagged\n)?(switchport access vlan (.*)\n)?exit$/) do |item|
+          interface_attrs = Hash.new
+          #interface_attrs["mtu"] = item[9]
+          if item[14] != nil then
+            Puppet.debug "TaggedVlans #{item[14]}"
+            interface_attrs["TaggedVlans"] = item[14]
+          end
+          if item[16] != nil then
+            interface_attrs["TaggedVlans"] = item[16]
+          end 
+          interface_data[item[0]] = interface_attrs 
+        end
+        res["interfacedata"] = interface_data.to_json
+        res
+      end
+      cmd 'show running-config'
+    end
+    
+    
     
 #    base.register_param 'vlan_attributes' do
 #      res = Hash.new
