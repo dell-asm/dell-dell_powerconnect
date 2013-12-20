@@ -1,5 +1,6 @@
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/vlan'
+require 'puppet/util/network_device/dell_powerconnect/model/portchannel'
 require 'puppet/util/network_device/dell_powerconnect/model/base'
 require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
 
@@ -44,6 +45,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch < Puppet::Ut
 
   [ 
     :vlan,
+    :portchannel,
   ].each do |key|
     define_method key.to_s do |name|
       grp = params[key].value.find { |g| g.name == name }
