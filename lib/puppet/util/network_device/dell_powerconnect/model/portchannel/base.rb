@@ -19,16 +19,18 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Portchannel::Base
 
   def self.register(base)
     ifprop(base, :allowvlans,"switchport trunk allowed vlan") do
-      after :mode
       add do |transport, value|
+        transport.command("switchport mode trunk")
         transport.command("switchport trunk allowed vlan add #{value}")
       end
-    end
+      remove { |*_| }
+    end    
     ifprop(base, :removevlans,"switchport trunk allowed vlan") do
-      after :mode
       add do |transport, value|
+        transport.command("switchport mode trunk")
         transport.command("switchport trunk allowed vlan remove #{value}")
       end
+      remove { |*_| }    
     end
   end
 end
