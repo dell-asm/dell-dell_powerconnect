@@ -42,7 +42,11 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
   def enable
     raise "Can't issue \"enable\" to enter privileged, no enable password set" unless enable_password
     transport.command("enable", {:noop => false}) do |out|
-      transport.command(enable_password, :noop => false) if out = /^Password:/
+      out.each_line do |line|
+       if line.start_with?("Password:")
+         transport.send(enable_password+"\r")
+       end
+      end
     end
   end
 
