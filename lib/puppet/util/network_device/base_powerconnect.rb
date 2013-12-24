@@ -1,8 +1,8 @@
 require 'uri'
 require 'openssl'
 require 'cgi'
-require 'puppet/util/network_device/transport'
-require 'puppet/util/network_device/transport/base_transport'
+require 'puppet/util/network_device/transport_powerconnect'
+require 'puppet/util/network_device/transport_powerconnect/base_powerconnect'
 
 # Base class which provides transport initialization
 # based on the information provided in device.conf file
@@ -14,10 +14,10 @@ class Puppet::Util::NetworkDevice::Base_powerconnect
     @url = URI.parse(url)
     @query = CGI.parse(@url.query) if @url.query
 
-    require "puppet/util/network_device/transport/#{@url.scheme}"
+    require "puppet/util/network_device/transport_powerconnect/#{@url.scheme}"
 
     unless @transport
-      @transport = Puppet::Util::NetworkDevice::Transport.const_get(@url.scheme.capitalize).new
+      @transport = Puppet::Util::NetworkDevice::Transport_powerconnect.const_get(@url.scheme.capitalize).new
       @transport.host = @url.host
       @transport.port = @url.port || case @url.scheme ; when "ssh" ; 22 ; when "telnet" ; 23 ; end
       if @query && @query['crypt'] && @query['crypt'] == ['true']
