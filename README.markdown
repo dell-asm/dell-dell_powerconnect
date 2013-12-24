@@ -1,3 +1,0 @@
-# dell_powerconnect #
-
-This is the dell_powerconnect module. It provides...
