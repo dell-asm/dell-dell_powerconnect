@@ -1,7 +1,7 @@
 require 'puppet/util/network_device'
 require 'puppet/util/network_device/sorter'
 
-module Puppet::Util::NetworkDevice::Dsl
+module Puppet::Util::NetworkDevice::Dsl_powerconnect
 
   def register_param(params, klass = nil, &block)
     # Make it so that we can register multiple Params at the same time

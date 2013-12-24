@@ -2,13 +2,13 @@ require 'puppet/util/network_device/dell_powerconnect'
 require 'puppet/util/network_device/dell_powerconnect/fact'
 require 'puppet/util/network_device/dell_powerconnect/possible_facts'
 require 'puppet/util/network_device/sorter'
-require 'puppet/util/network_device/dsl'
+require 'puppet/util/network_device/dsl_powerconnect'
 
 # Represents the inventory data for PowerConnect switch
 # Individual facts are stored as Fact instances
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Facts
 
-  include Puppet::Util::NetworkDevice::Dsl
+  include Puppet::Util::NetworkDevice::Dsl_powerconnect
 
   attr_reader :transport
 

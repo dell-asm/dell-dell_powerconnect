@@ -1,4 +1,4 @@
-require 'puppet/util/network_device/dsl'
+require 'puppet/util/network_device/dsl_powerconnect'
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/sorter'
 
@@ -6,7 +6,7 @@ require 'puppet/util/network_device/sorter'
 # for each puppet type
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
-  include Puppet::Util::NetworkDevice::Dsl
+  include Puppet::Util::NetworkDevice::Dsl_powerconnect
 
   attr_accessor :ensure, :name, :transport, :facts
 
