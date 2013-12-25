@@ -30,13 +30,12 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Summary of parameters.
 # -------------------------------------------------------------------------
 
-	name: ID of the VLAN.
+	name: (Required)ID of the VLAN.
 	
-    ensure: (Required)
-    This parameter is required to call either create or remove method.
-    Possible values: present/absent
-    If its value is set to present, create method will be invoked.
-    If its value is set to absent, remove method will be invoked.
+    ensure: (Required) This parameter is required to call either create or remove method.
+    		Possible values: present/absent
+    		If its value is set to present, create method will be invoked.
+    		If its value is set to absent, remove method will be invoked.
 
     vlan_name: Description of the VLAN
     
@@ -68,12 +67,11 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 	
    Sample init.pp file:
    
-   class dell_powerconnect {
-		dell_powerconnect::vlan_create_remove { '5':
+   powerconnect_vlan {
+   			'5':
 			vlan_name 			=> 'VLAN005',
 			ensure              =>  present,
-		}
-	}
+   }
 
    A user can create an init.pp file based on the above sample files and call the "puppet device" command , for example: 
    # puppet device

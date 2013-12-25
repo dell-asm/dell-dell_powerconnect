@@ -28,9 +28,12 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Summary of parameters.
 # -------------------------------------------------------------------------
 
-	name: 
-	allowvlans:
-	removevlans:
+	name: (Required)This parameter defines the ID of the port-channel to be configured.
+	      The value must be in the range 1-128.
+	       
+	allowvlans: This parameter defines the list of vlans to be tagged to the port-channel.
+	
+	removevlans: This parameter defines the list of vlans to be untagged from the port-channel.
     
     
 # -------------------------------------------------------------------------
@@ -60,12 +63,11 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 	
    Sample init.pp file:
    
-   class dell_powerconnect {
-		dell_powerconnect::portchannel_tag_untag_vlans { '42':
-		     allowvlans       => 38,
-		     removevlans      => 31,
-		}
-	}
+   powerconnect_portchannel {
+       '42':
+	   allowvlans       => 38,
+	   removevlans      => 31,
+   }
 		
 
    A user can create an init.pp file based on the above sample files and call the "puppet device" command , for example: 

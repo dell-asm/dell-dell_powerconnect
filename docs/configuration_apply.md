@@ -8,7 +8,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 #  Supported Functionality
 # --------------------------------------------------------------------------
 
-	- Apply Firmware Update on the Switch
+	- Apply Configuration Update on the Switch
 
 
 # -------------------------------------------------------------------------
@@ -16,8 +16,8 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # -------------------------------------------------------------------------
 
 
-  1. Apply Firmware Update on the Switch
-  		This will update the firmware of the switch with a new image.
+  1. Apply Configuration Update on the Switch
+  		This will update the startup or running configuration of the switch.
 
     
 
@@ -25,15 +25,15 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Summary of parameters.
 # -------------------------------------------------------------------------
 
-	name: (Required)This parameter defines a dummy image name.
+	name: (Required)This parameter defines a dummy configuration name.
 	 
-	imageurl: This parameter defines the TFTP URL of the firmware image.
-	          The value must be in the format tftp://${TFTPServerIPAddress}/${imageLocation}
-	          The image name must have the firmware version appended to it eg. PC7000_M6348v5.1.2.3.stk
-	
-	forceupdate: This parameter determines whether firmware updates can be forcefully applied on the switch.
-	             The possible values are true and false. The default value is false.
-	             If the value is true, then the firmware image will be applied even if it's the same version as existing firmware version.
+	url: This parameter defines the TFTP URL of the switch configuration file.
+	     The value must be in the format tftp://${TFTPServerIPAddress}/${configFileLocation}
+	     
+	config_type: This parameter determines whether the provided configuration is startup or running configuration.
+	             The possible values are startup and running. The default value is running.
+	             If the value is startup, then the startup configuration will be updated.
+	             If the value is running, then the running configuration will be updated.
     
     
 # -------------------------------------------------------------------------
@@ -42,11 +42,11 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 
 	node "$switch_fqdn" {
 
-    	powerconnect_firmware{
+    	powerconnect_config{
 
-		    '$firmware-image':
-		     imageurl       => '$firmware-imageurl',
-		     forceupdate    => '$firmware-force',
+		    '$config-image':
+		     url            => '$config-url',
+		     config_type    => '$config-type',
 
    		 } 
    		 
@@ -59,14 +59,14 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
    Refer to the examples in the manifest directory.
    The following file capture the details for the sample init.pp and supported files:
 
-    - firmware_upgrade.pp
+    - configuration_apply.pp
 	
    Sample init.pp file:
    
-   powerconnect_firmware {
-       'image1':
-	   imageurl       => tftp://10.10.10.10/PC7000_M6348v5.1.2.3.stk,
-	   forceupdate    => true,
+   powerconnect_config {
+       'config1':
+	   url            => 'tftp://10.10.10.10/startup.bak',
+	   config_type    => 'startup',
    }
 		
 

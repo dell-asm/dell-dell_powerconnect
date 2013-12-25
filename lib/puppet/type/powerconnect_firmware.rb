@@ -7,17 +7,17 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     isnamevar
   end
 
-  newparam(:imageurl) do     
+  newparam(:imageurl) do
     validate do |imageurl|
       raise ArgumentError, "Url must be a in format of tftp://${TFTPServerIPAddress}/${imageLocation} " unless imageurl.is_a? String
     end
-  end 
-  
+  end
+
   newparam(:forceupdate) do
     desc "Whether the provided firmware update has to be applied by force"
     newvalues(:true, :false)
     defaultto :false
-  end 
+  end
 
   newproperty(:returns, :event => :executed_command) do |property|
     munge do |value|
@@ -39,9 +39,9 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     end
 
     def sync
-   
+
       event = :executed_command
-      out = provider.run(self.resource[:imageurl], self.resource[:forceupdate]) 
+      out = provider.run(self.resource[:imageurl], self.resource[:forceupdate])
       event
     end
   end
@@ -50,5 +50,5 @@ Puppet::Type.newtype(:powerconnect_firmware) do
 
   def self.instances
     []
-  end  
+  end
 end

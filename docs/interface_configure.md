@@ -35,17 +35,38 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Summary of parameters.
 # -------------------------------------------------------------------------
 
-	name: 
-	description:
-	mode:
-	add_vlans_general_mode:
-	remove_vlans_general_mode:
-  	add_vlans_trunk_mode:
-  	remove_vlans_trunk_mode:
-  	add_interface_to_portchannel:
-  	remove_interface_from_portchannel:
-  	mtu:
-  	shutdown:
+	name: (Required)This parameter defines the name of the interface
+	
+	description: (Required)This parameter defines the description of the interface
+	
+	mode: This parameter defines the mode of the interface
+	      The possible values are "general", "trunk", "access" and "private"
+	      
+	add_vlans_general_mode: This parameter defines the list of vlans to be mapped to an interface in general mode.
+	                        This parameter can be set only if the mode parameter is either absent or set to "general".
+	                        
+	remove_vlans_general_mode: This parameter defines the list of vlans to be removed from an interface in general mode.
+	
+  	add_vlans_trunk_mode: This parameter defines the list of vlans to be mapped to an interface in trunk mode.
+	                      This parameter can be set only if the mode parameter is either absent or set to "trunk".
+	                      
+  	remove_vlans_trunk_mode: This parameter defines the list of vlans to be removed from an interface in trunk mode.
+	                         
+  	add_interface_to_portchannel: This parameter defines the port-channel ID to be mapped to an interface.
+  	                              The value must be an integer and in the range 1-128.
+  	
+  	remove_interface_from_portchannel: This parameter defines the port-channel ID to be removed from an interface.
+  	                                   The possible values are true or false.The default value is false.
+  	                                   If the value is true, it removes the port-channel from the interface.
+  	
+  	mtu: This parameter sets mtu for the interface.
+		 If this parameter is present it sets the MTU value of that interface.
+		 If this parameter is absent, MTU value for that interface remains unchanged.
+		 MTU value must be between 1518-9216.
+		 
+  	shutdown: This parameter defines whether to enable or disable the interface. 
+			  The possible values are true or false. The default value is "false".
+			  If the value is true it disables the interface .
     
     
 # -------------------------------------------------------------------------
@@ -82,8 +103,8 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 	
    Sample init.pp file:
    
-   class dell_powerconnect {
-		dell_powerconnect::interface_configure { 'Gi1/0/21':
+   powerconnect_interface {
+			 'Gi1/0/21':
 		     description       => 'ServerPort456',
 		     mode              => 'general',
 		     mtu               => 9216,
@@ -91,9 +112,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 		     add_vlans_general_mode   => '40',
 		     remove_interface_from_portchannel => true,
 		     shutdown => false;
-
-		}
-	}
+   }
 
    A user can create an init.pp file based on the above sample files and call the "puppet device" command , for example: 
    # puppet device

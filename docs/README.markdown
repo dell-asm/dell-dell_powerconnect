@@ -13,7 +13,8 @@
 ## Overview
 The Dell PowerConnect switch module is designed to extend the support for managing PowerConnect switch configuration using Puppet and its Network Device functionality.
 
-The Dell PowerConnect switch module has been written and tested against PowerConnect Device (firmware version 5.1.2.3). 
+The Dell PowerConnect switch module has been written and tested against the following Dell PowerConnect switch models:
+- PowerConnect 7024 (firmware version 5.1.2.3). 
 However, this module may be compatible with other versions.
 
 ## Features
@@ -22,7 +23,7 @@ This module supports the following functionality:
  * VLAN creation and deletion.
  * Interface Configuration
  * Port Channel Configuration
- * Saving and Applying Configuration on Switch
+ * Applying Configuration Updates on Switch
  * Applying Firmware Upgrades on Switch
 
 ## Requirements
@@ -42,18 +43,18 @@ In order to run the puppet against a single device, you can use the following co
 
     puppet device --deviceconfig /etc/puppet/device/[device].conf
 
-Example configuration `/etc/puppet/device/powerconnect.conf`:
+Example configuration `/etc/puppet/device/powerconnect.example.com.conf`:
 
-    [powerconnect]
+    [powerconnect.example.com]
       type dell_powerconnect
-      url telnet://admin:P@ssw0rd@10.10.10.10/?enable=P@ssw0rd
+      url telnet://admin:P@ssw0rd@powerconnect.example.com/?enable=P@ssw0rd
 
 ### PowerConnect operations
 This module can be used to configure vlans, interfaces and port-channels on PowerConnect switch.
 For example: 
 
 
-node "powerconnect" {
+node "powerconnect.example.com" {
 	powerconnect_vlan{
 		'9':
 			vlan_name => 'VLAN009',
@@ -72,6 +73,6 @@ are mentioned in the following readme files, that are shipped with the module:
   - vlan_create_remove.md
   - interface_configure.md
   - portchannel_tag_untag_vlans.md
-  - configuration_save_apply.md
+  - configuration_apply.md
   - firmware_upgrade.md
 
