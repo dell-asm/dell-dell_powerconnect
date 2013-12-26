@@ -50,9 +50,9 @@ Example configuration `/etc/puppet/device/powerconnect.example.com.conf`:
       url telnet://admin:P@ssw0rd@powerconnect.example.com/?enable=P@ssw0rd
 
 ### PowerConnect operations
-This module can be used to configure vlans, interfaces and port-channels on PowerConnect switch.
-For example: 
+This module can be used to configure vlans, interfaces, port-channels, apply running\startup config from tftp server on PowerConnect switch.
 
+For example: 
 
 node "powerconnect.example.com" {
 	powerconnect_vlan{
