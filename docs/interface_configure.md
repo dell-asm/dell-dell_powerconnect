@@ -40,7 +40,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 	description: (Required)This parameter defines the description of the interface
 	
 	mode: This parameter defines the mode of the interface
-	      The possible values are "general", "trunk", "access" and "private"
+	      The possible values are "general", "trunk" and "access" 
 	      
 	add_vlans_general_mode: This parameter defines the list of vlans to be mapped to an interface in general mode.
 	                        This parameter can be set only if the mode parameter is either absent or set to "general".

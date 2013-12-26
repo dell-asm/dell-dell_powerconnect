@@ -1,71 +1,69 @@
 Puppet::Type.newtype(:powerconnect_interface) do
-  @doc = "This represents a switch interface."
+  @doc = "Configure a switch interface."
 
   apply_to_device
 
   newparam(:name) do
-    desc "The interface's name."
-    newvalues(/^\w+[Gg]igabitethernet\S+$/, /Gi\S+$/,  /[Tt]engigabitethernet\S+$/, /[Tt]e\S+$/)
+    desc "The interface's name. Valid interface name should start with Gigabitethernet or Gi or Tengigabitethernet or Te followed by unit/slot/port."
     isnamevar
+    validate do |value|
+      unless value =~ /^\A[Gg]igabitethernet\s*\S+$/ or value =~ /Gi\s*\S+$/ or value =~ /[Tt]engigabitethernet\s*\S+$/  or value =~ /[Tt]e\s*\S+$/
+        raise ArgumentError, "%s is not a valid interface name. Valid interface name should start with Gigabitethernet or Gi or Tengigabitethernet or Te followed by unit/slot/port." % value
+      end
+    end
+
   end
 
   newproperty(:description) do
-    desc "The description of the interface."
+    desc "The description of the port attached to this interface."
     isrequired
     newvalues(/("([^"]*)")|(\A[^\n\s]\S+$)/)
   end
 
   newproperty(:mode) do
-    desc "Set the mode of the interface."
-    defaultto(:absent)
-    newvalues(:absent, :access, :general, :private, :trunk)
+    desc "Configure the VLAN membership mode of an interface. Valid values are access, trunk or general."
+    newvalues(:access, :general, :trunk)
   end
 
   newproperty(:add_vlans_general_mode) do
-    desc "List of allowed VLANs in general mode"
-    defaultto(:absent)
-    newvalues(:absent, /^(\d+(-\d+)?,)*\d+(-\d+)?$/)
-
+    desc "Add VLANs to a general port. Specify the list of valid VLAN IDs to be added. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      if resource.value(:mode) != :general and value != :absent
-        raise ArgumentError, "May only be set if mode is general"
+      if resource.value(:mode) != :general and resource.value(:mode) != :absent
+        raise ArgumentError, "Add VLANs to a genaral port only if the port is in general mode. Specify 'mode' parameter as 'general' to proceed with the opearation."
       end
-
-      self.class.value_collection.validate(value)
+      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
+        raise ArgumentError, "%s is not a valid input for add_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      end
     end
   end
 
   newproperty(:remove_vlans_general_mode) do
-    desc "List of VLANs to be removed in general mode"
-    defaultto(:absent)
-    newvalues(:absent, /^(\d+(-\d+)?,)*\d+(-\d+)?$/)
-
+    desc "Remove VLANs from a general port. Specify the list of valid VLAN IDs to be removed. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      self.class.value_collection.validate(value)
+      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
+        raise ArgumentError, "%s is not a valid input for remove_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      end
     end
   end
 
   newproperty(:add_vlans_trunk_mode) do
-    desc "List of allowed VLANs in trunk mode"
-    defaultto(:absent)
-    newvalues(:absent, /^(\d+(-\d+)?,)*\d+(-\d+)?$/)
-
+    desc "Add VLANs to a trunk port. Specify the list of valid VLAN IDs to be added. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      if resource.value(:mode) != :trunk and value != :absent
-        raise ArgumentError, "May only be set if mode is trunk"
+      if resource.value(:mode) != :trunk and resource.value(:mode) != :absent
+        raise ArgumentError, "Add VLANs to a trunk only if the port is in trunk mode. Specify 'mode' parameter as 'trunk' to proceed with the opearation."
       end
-
-      self.class.value_collection.validate(value)
+      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
+        raise ArgumentError, "%s is not a valid input for add_vlans_trunk_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      end
     end
   end
 
   newproperty(:remove_vlans_trunk_mode) do
-    desc "List of VLANs to be removed in trunk mode"
-    defaultto(:absent)
-    newvalues(:absent, /^(\d+(-\d+)?,)*\d+(-\d+)?$/)
-
+    desc "Remove VLANs from a trunk port. Specify the list of valid VLAN IDs to be removed. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      self.class.value_collection.validate(value)
+      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
+        raise ArgumentError, "%s is not a valid input for remove_vlans_trunk_mode.  Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      end
     end
   end
 
@@ -73,7 +71,6 @@ Puppet::Type.newtype(:powerconnect_interface) do
     desc "Set mtu of the interface. mtu vlaue must be between 1518-9216."
     defaultto(:absent)
     newvalues(:absent, /^\d+$/)
-
     validate do |value|
       return if value == :absent
       raise ArgumentError, "'mtu' vlaue must be between 1518-9216" unless value.to_i >= 1518 && value.to_i <= 9216
@@ -81,13 +78,13 @@ Puppet::Type.newtype(:powerconnect_interface) do
   end
 
   newproperty(:shutdown) do
-    desc "Enable or disable  the interface."
+    desc "Enable or disable the interface. Specify 'true' to disable the interface."
     defaultto(false)
     newvalues(true,false)
   end
 
   newproperty(:add_interface_to_portchannel) do
-    desc "Add the interface to the portcahnnel specified. Value of the port-channel number should be in between 1-128."
+    desc "Associate the interface with a portchannel. Value of the port-channel number should be in between 1-128."
     defaultto(:absent)
     newvalues(:absent, /^\d+$/)
     validate do |value|
@@ -98,9 +95,8 @@ Puppet::Type.newtype(:powerconnect_interface) do
   end
 
   newproperty(:remove_interface_from_portchannel) do
-    desc "Remove the interface from the portcahnnel specified. Specify 'true' to remove this interface from portchannel"
+    desc "Remove the interface from the portchannel. Specify 'true' to remove this interface from the portchannel"
     defaultto(false)
     newvalues(false,true)
   end
 end
-
