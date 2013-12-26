@@ -15,6 +15,13 @@ Puppet::Type.newtype(:powerconnect_config) do
 
   newparam(:config_type) do
     desc "Whether the provided configuration is startup configuration or running configuration"    
+    newvalues(/((\bstartup\b)|(\brunning\b))/)
+  end
+  
+  newparam(:force) do
+   desc "Whether the provided configuration has to be applied in force"
+   newvalues(:true, :false)
+   defaultto :false
   end
 
   newproperty(:returns, :event => :executed_command) do |property|
@@ -39,7 +46,7 @@ Puppet::Type.newtype(:powerconnect_config) do
     def sync
    
       event = :executed_command
-      out = provider.run(self.resource[:url], self.resource[:config_type]) 
+      provider.run(self.resource[:url], self.resource[:config_type], self.resource[:force]) 
       event
     end
   end
