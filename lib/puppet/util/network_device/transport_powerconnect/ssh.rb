@@ -1,6 +1,6 @@
 require 'puppet/util/network_device'
 require 'puppet/util/network_device/transport_powerconnect'
-require 'puppet/util/network_device/transport/base_powerconnect'
+require 'puppet/util/network_device/transport_powerconnect/base_powerconnect'
 
 
 class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::NetworkDevice::Transport_powerconnect::Base_powerconnect
