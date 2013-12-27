@@ -11,9 +11,11 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Base_powerconnect
   end
 
   def send(cmd, noop)
+    Puppet.debug "Override Me: cmd = #{cmd} noop = #{noop}"
   end
 
   def expect(prompt)
+    Puppet.debug "Override Me: prompt = #{prompt}"
   end 
 
   def command(cmd, options = {})

@@ -31,6 +31,7 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     defaultto "#"
 
     def change_to_s(currentvalue, newvalue)
+      Puppet.debug "currentvalue = #{currentvalue} newvalue = #{newvalue}"
       "executed successfully"
     end
 

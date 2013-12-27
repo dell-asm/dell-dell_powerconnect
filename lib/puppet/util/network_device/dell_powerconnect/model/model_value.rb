@@ -21,5 +21,6 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ModelValue < Puppet
   end
 
   def update(transport, old_value)
+    Puppet.debug "Inside model_value.rb: transport = #{transport} old_value = #{old_value}"
   end
 end

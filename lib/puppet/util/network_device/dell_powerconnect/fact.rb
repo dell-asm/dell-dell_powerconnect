@@ -10,6 +10,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Fact
     @name = name
     @idx = idx
     @evaluated = false
+    Puppet.debug "Inside fact.rb: transport = #{transport} facts = #{facts}"
     self.instance_eval(&block)
   end
 
