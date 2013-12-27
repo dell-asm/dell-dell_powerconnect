@@ -39,14 +39,14 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     
     successmsg = "Firmware Update is successful."
     failedmsg = "Firmware Update Failed"
-    status = rebootSwitch()
+    status = rebootswitch()
     sleep 300
     status == "Successful" ? Puppet.debug(successmsg) : Puppet.debug(failedmsg)
     status == "Successful" ? (return successmsg) :(return failedmsg)
 
   end
   
-  def rebootSwitch()
+  def rebootswitch()
     dev = Puppet::Util::NetworkDevice.current
     dev.transport.command('update bootcode') do |out|
       out.each_line do |line|
