@@ -32,7 +32,7 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Telnet < Puppet::Util
       end
       lines.split(/\n/).each do |line|
         Puppet.debug("telnet: IN #{line}") if Puppet[:debug]
-        Puppet.fail "Executed invalid Command! For a detailed output add --debug to the next Puppet run!" if line.match(/^% Invalid input detected at '\^' marker\.$/n)
+        raise Puppet::Error, "Executed invalid Command! For a detailed output add --debug to the next Puppet run!" if line.match(/^% Invalid input detected at '\^' marker\.$/n)
       end
       lines
     end

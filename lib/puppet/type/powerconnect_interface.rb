@@ -16,7 +16,6 @@ Puppet::Type.newtype(:powerconnect_interface) do
 
   newproperty(:description) do
     desc "The description of the port attached to this interface."
-    isrequired
     newvalues(/("([^"]*)")|(\A[^\n\s]\S+$)/)
   end
 
@@ -28,9 +27,6 @@ Puppet::Type.newtype(:powerconnect_interface) do
   newproperty(:add_vlans_general_mode) do
     desc "Add VLANs to a general port. Specify the list of valid VLAN IDs to be added. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      if resource.value(:mode) != :general and resource.value(:mode) != :absent
-        raise ArgumentError, "Add VLANs to a genaral port only if the port is in general mode. Specify 'mode' parameter as 'general' to proceed with the opearation."
-      end
       unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
         raise ArgumentError, "%s is not a valid input for add_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
       end
@@ -49,9 +45,6 @@ Puppet::Type.newtype(:powerconnect_interface) do
   newproperty(:add_vlans_trunk_mode) do
     desc "Add VLANs to a trunk port. Specify the list of valid VLAN IDs to be added. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      if resource.value(:mode) != :trunk and resource.value(:mode) != :absent
-        raise ArgumentError, "Add VLANs to a trunk only if the port is in trunk mode. Specify 'mode' parameter as 'trunk' to proceed with the opearation."
-      end
       unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
         raise ArgumentError, "%s is not a valid input for add_vlans_trunk_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
       end

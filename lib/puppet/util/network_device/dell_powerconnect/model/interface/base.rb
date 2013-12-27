@@ -11,7 +11,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
         transport.command("#{base_command} #{value}")
       end
       remove do |transport, old_value|
-        transport.command("no #{base_command} #{old_value}")
+        transport.command("no #{base_command}")
       end
       evaluate(&block) if block
     end
