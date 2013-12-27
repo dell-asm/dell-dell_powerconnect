@@ -1,3 +1,4 @@
+#Parent class for all supported transport protocols.
 require 'puppet/util/network_device'
 require 'puppet/util/network_device/transport_powerconnect'
 

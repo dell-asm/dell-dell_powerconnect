@@ -1,3 +1,4 @@
+#Module for parsing string values for PowerConnect Switch
 require 'erb'
 require 'puppet/util/network_device/value_helper'
 require 'puppet/util/network_device/dell_powerconnect/model'

@@ -1,3 +1,4 @@
+#Module for sorting the facts for PowerConnect switch
 require 'tsort'
 
 class Puppet::Util::NetworkDevice::Sorter

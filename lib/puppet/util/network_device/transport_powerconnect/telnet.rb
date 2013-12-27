@@ -1,3 +1,4 @@
+#Module for establishing Telnet connectivity to PowerConnect switch
 require 'puppet/util/network_device'
 require 'puppet/util/network_device/transport_powerconnect'
 require 'puppet/util/network_device/transport_powerconnect/base_powerconnect'

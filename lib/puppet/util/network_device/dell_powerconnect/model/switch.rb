@@ -1,3 +1,4 @@
+#Module for configuring facts on the switch device
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/vlan'
 require 'puppet/util/network_device/dell_powerconnect/model/portchannel'

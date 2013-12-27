@@ -1,3 +1,4 @@
+#Module for configuring interfaces for PowerConnect Switch
 require 'puppet/util/network_device/ipcalc'
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/base'

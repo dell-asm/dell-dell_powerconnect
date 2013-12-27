@@ -1,3 +1,4 @@
+#Module for instantiating a singleton dell_powerconnect device class
 require 'puppet/util/network_device/dell_powerconnect/device'
 
 class Puppet::Util::NetworkDevice::Device_singleton

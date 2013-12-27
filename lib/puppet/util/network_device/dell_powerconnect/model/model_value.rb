@@ -1,3 +1,4 @@
+#Module for parsing model value
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
 require 'puppet/util/monkey_patches_powerconnect'
