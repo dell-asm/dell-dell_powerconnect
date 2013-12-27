@@ -37,10 +37,10 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   def configuration_changed?(is, should, options = {})
     # Dup the Vars so we dont modify the orig. values
-    is = is.dup.delete_if {|k,v| v == :undef || should[k] == :undef}
-    is.delete_if {|k,v| k == :ensure} unless options[:keep_ensure]
-    should = should.dup.delete_if {|k,v| v == :undef}
-    should.delete_if {|k,v| k == :ensure} unless options[:keep_ensure]
+    is = is.dup.delete_if {|key,value| value == :undef || should[key] == :undef}
+    is.delete_if {|key,value| key == :ensure} unless options[:keep_ensure]
+    should = should.dup.delete_if {|key,value| value == :undef}
+    should.delete_if {|key,value| key == :ensure} unless options[:keep_ensure]
     is != should
   end
 

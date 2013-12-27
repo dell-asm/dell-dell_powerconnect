@@ -78,7 +78,7 @@ module Puppet::Util::NetworkDevice::Dsl_powerconnect
         end
         param.parse(out)
       elsif param.match_param.is_a? Array
-        param.parse([param.match_param].flatten.collect{|p|@params[p].value})
+        param.parse([param.match_param].flatten.collect{|item|@params[item].value})
       else
         param.parse(@params[param.match_param].value)
       end

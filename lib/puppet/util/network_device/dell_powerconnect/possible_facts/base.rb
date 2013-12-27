@@ -131,23 +131,23 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       vlan_data = Hash.new
       vlan_attrs_global = Hash.new
       match do |txt|
-        i = 0
-        lineNum = 0
+        index = 0
+        linenum = 0
         newvlan = true
         txt.each_line do |line|
-          if lineNum > 3 then
+          if linenum > 3 then
             confvlans = base.facts['vlan'].value.split(',')
             numbered_lines = line.scan(/[0-9]\s+(.+)/).flatten.compact
             if numbered_lines[0].to_s != '' then
               vlan_attrs = Hash.new
-              vlan_data[confvlans[i].to_s] = vlan_attrs 
+              vlan_data[confvlans[index].to_s] = vlan_attrs 
               line.scan(/[0-9]\s+(.+)/) do |item|            
                 attributes = item[0].gsub(/[ \r\t\n]+/, ' ').strip.split(' ')
                 vlan_attrs["name"] = attributes[0]
                 vlan_attrs["type"] = attributes[2]
                 vlan_attrs["ports"] = attributes[1]
                 vlan_attrs_global = vlan_attrs    
-                i = i+1      
+                index = index+1      
               end  
             else
               justports = line.gsub(/[ \r\t\n]+/, ' ').strip
@@ -155,9 +155,9 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
                 vlan_attrs_global["ports"] = vlan_attrs_global["ports"] + justports
               end
             end            
-            lineNum = lineNum +1
+            linenum = linenum +1
           else
-            lineNum = lineNum + 1
+            linenum = linenum + 1
           end 
 
         end

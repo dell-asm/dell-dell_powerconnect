@@ -43,7 +43,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ScopedValue < Puppe
     munged.collect do |pair|
       (content,name) = pair
       content if name == @scope_name
-    end.reject { |v| v.nil? }.first
+    end.reject { |value| value.nil? }.first
   end
 
   def parse(txt)

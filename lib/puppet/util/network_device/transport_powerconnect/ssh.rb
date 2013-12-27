@@ -25,7 +25,7 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::N
       raise TimeoutError, "SSH timed out while trying to connect to #{host}"
     rescue Net::SSH::AuthenticationFailed
       raise Puppet::Error, "SSH auth failed while trying to connect to #{host} as #{user}"
-    rescue Net::SSH::Exception => e
+    rescue Net::SSH::Exception => ex
       raise Puppet::Error, "SSH connection failure to #{host}"
     end
 
@@ -81,8 +81,8 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::N
         break
       end
     end
-    line.split(/\n/).each do |l|
-      Puppet.debug "SSH_IOS received: #{l}" if Puppet[:debug]
+    line.split(/\n/).each do |item|
+      Puppet.debug "SSH_IOS received: #{item}" if Puppet[:debug]
       Puppet.fail "Executed invalid Command! For a detailed output add --debug to the next Puppet run!" if line.match(/^% Invalid input detected at '\^' marker\.$/n)
     end
     line

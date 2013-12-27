@@ -6,12 +6,12 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
   def run(url, forceupdate)
     dev = Puppet::Util::NetworkDevice.current
     txt = ''
-    currentFirmwareVersion = dev.switch.facts['Active_Software_Version']
+    currentfirmwareversion = dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
-    Puppet.debug "Current Firmware Version #{currentFirmwareVersion}"
+    Puppet.debug "Current Firmware Version #{currentfirmwareversion}"
     Puppet.debug "New Firmware Version #{newfirmwareversion}"
     Puppet.debug("ForceUpdate : #{forceupdate}")
-    if currentFirmwareVersion.to_s.strip.eql?(newfirmwareversion.to_s.strip) && forceupdate == :false
+    if currentfirmwareversion.to_s.strip.eql?(newfirmwareversion.to_s.strip) && forceupdate == :false
       txt = "Existing Firmware versions is same as new Firmware version, so skipping firmware update"
       Puppet.debug(txt)
       return txt
@@ -37,12 +37,12 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       txt << out
     end
     
-    msg1 = "Firmware Update is successful."
-    msg2 = "Firmware Update Failed"
+    successmsg = "Firmware Update is successful."
+    failedmsg = "Firmware Update Failed"
     status = rebootSwitch()
     sleep 300
-    status == "Successful" ? Puppet.debug(msg1) : Puppet.debug(msg2)
-    status == "Successful" ? (return msg1) :(return msg2)
+    status == "Successful" ? Puppet.debug(successmsg) : Puppet.debug(failedmsg)
+    status == "Successful" ? (return successmsg) :(return failedmsg)
 
   end
   

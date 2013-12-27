@@ -13,10 +13,10 @@ class Puppet::Util::NetworkDevice::Sorter
   end
 
   def tsort_each_child(param, &block)
-    @param.each_value.select  { |i|
-      next unless i.respond_to?(:before) && i.respond_to?(:after)
+    @param.each_value.select  { |item|
+      next unless item.respond_to?(:before) && item.respond_to?(:after)
       next unless param.respond_to?(:after)
-      i.before == param.name || i.name == param.after
+      item.before == param.name || item.name == param.after
     }.each(&block)
   end
 end

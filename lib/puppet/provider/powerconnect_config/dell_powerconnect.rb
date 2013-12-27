@@ -8,15 +8,15 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     dev = Puppet::Util::NetworkDevice.current
     digestlocalfile=''
     digestserverconfig=''
-    extBackupConfigfile = ''
+    extbackupconfigfile = ''
     flashtmpfile = 'flash://backup-configtemp.scr'
-    backedupPrevConfig = false
+    backedupprevconfig = false
     
     ##first check whether there is any backup-config, if so store it to flash and restore it at the end
-    dev.transport.command('show backup-config') do |extBackup|
-      extBackupConfigfile<< extBackup
+    dev.transport.command('show backup-config') do |extbackup|
+      extbackupconfigfile<< extbackup
     end
-    if extBackupConfigfile.include? "Configuration script 'backup-config' not found"
+    if extbackupconfigfile.include? "Configuration script 'backup-config' not found"
       ##There is no existing backup config so do nothing
       Puppet.debug "no previous backup config found"
     else
@@ -55,7 +55,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     Puppet.debug "i am deleting the temporary backup config"
     executeCommand(dev, 'delete backup-config',"Delete ")
        
-    if backedupPrevConfig == true
+    if backedupprevconfig == true
       Puppet.debug "i am restoring the previous backup config"
       #Restoring the backed up backed up backup config
       executeCommand(dev, 'copy ' + flashtmpfile+ ' backup-config',"Are you sure you want to start")
