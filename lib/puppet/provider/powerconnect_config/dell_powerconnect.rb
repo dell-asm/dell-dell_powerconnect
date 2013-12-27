@@ -49,11 +49,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
         Puppet.debug "i am applying the running config"
         executecommand(dev, 'copy ' + url + ' running-config',"Are you sure you want to start")
       end
-    end    
-    
-    # Deleting the temporary backupconfig
-    Puppet.debug "i am deleting the temporary backup config"
-    executecommand(dev, 'delete backup-config',"Delete ")
+    end
        
     if backedupprevconfig == true
       Puppet.debug "i am restoring the previous backup config"
@@ -69,7 +65,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       #executecommand(dev, 'reload', "Are you sure you want to")
       dev.transport.command('reload') do |out|
         out.each_line do |line|
-          Puppet.debug "line = #{line}"
+          #Puppet.debug "line = #{line}"
           if line.include?("Are you sure you want to")
             Puppet.debug "match found"
             dev.transport.send("y\r")
@@ -83,10 +79,11 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   def executecommand(dev, cmd, str)
     dev.transport.command(cmd) do |out|
       out.each_line do |line|
-        Puppet.debug "line = #{line}"
         if line.include?(str)
-          Puppet.debug "match found"
           dev.transport.send("y\r") 
+          if dev.transport.class.name.include? 'Ssh'
+            return
+          end          
         end
       end   
     end  
@@ -94,10 +91,18 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   
   def getfilemd5hash(dev, cmd, slice)
     filecontent = ''
-    dev.transport.command(cmd) do |out|
+    dev.transport.command(cmd) do |out|   
       filecontent<< out
     end
-    filecontent.slice!(slice)
+    if dev.transport.class.name.include? 'Telnet'
+      filecontent.slice!(slice)
+    else
+      if dev.transport.class.name.include? 'Ssh'
+        index = filecontent.rindex("!Current Configuration")
+        filecontent = filecontent[index..-1]
+      else
+      end
+    end
     digestlocalfile = Digest::MD5.hexdigest(filecontent)
     return digestlocalfile
   end
