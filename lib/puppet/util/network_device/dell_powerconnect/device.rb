@@ -45,6 +45,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
       out.each_line do |line|
        if line.start_with?("Password:")
          transport.send(enable_password+"\r")
+	 return
        end
       end
     end

@@ -89,7 +89,7 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::N
   end
 
   def send(line, noop = false)
-    Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
+    #Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
     @channel.send_data(line + "\n") unless noop
   end
 

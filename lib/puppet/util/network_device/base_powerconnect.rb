@@ -19,7 +19,7 @@ class Puppet::Util::NetworkDevice::Base_powerconnect
     unless @transport
       @transport = Puppet::Util::NetworkDevice::Transport_powerconnect.const_get(@url.scheme.capitalize).new
       @transport.host = @url.host
-      @transport.port = @url.port || case @url.scheme ; when "ssh" ; 22 ; when "telnet" ; 23 ; end
+      @transport.port = case @url.scheme ; when "ssh" ; 22 ; when "telnet" ; 23 ; end || @url.port 
       if @query && @query['crypt'] && @query['crypt'] == ['true']
         self.crypt = true
         # FIXME: https://github.com/puppetlabs/puppet/blob/master/lib/puppet/application/device.rb#L181
