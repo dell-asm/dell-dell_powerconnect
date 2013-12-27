@@ -8,7 +8,7 @@ Puppet::Type.newtype(:powerconnect_interface) do
     isnamevar
     validate do |value|
       unless value =~ /^\A[Gg]igabitethernet\s*\S+$/ or value =~ /Gi\s*\S+$/ or value =~ /[Tt]engigabitethernet\s*\S+$/  or value =~ /[Tt]e\s*\S+$/
-        raise ArgumentError, "%s is not a valid interface name. Valid interface name should start with Gigabitethernet or Gi or Tengigabitethernet or Te followed by unit/slot/port." % value
+        raise ArgumentError, "%s is not a valid interface name. Valid interface name should start with 'Gigabitethernet or Gi or Tengigabitethernet or Te' followed by unit/slot/port." % value
       end
     end
 
@@ -20,7 +20,7 @@ Puppet::Type.newtype(:powerconnect_interface) do
   end
 
   newproperty(:mode) do
-    desc "Configure the VLAN membership mode of an interface. Valid values are access, trunk or general."
+    desc "Configure the VLAN membership mode of an interface. Valid values are access, trunk, or general."
     newvalues(:access, :general, :trunk)
   end
 
@@ -61,12 +61,12 @@ Puppet::Type.newtype(:powerconnect_interface) do
   end
 
   newproperty(:mtu) do
-    desc "Set mtu of the interface. mtu vlaue must be between 1518-9216."
+    desc "Set mtu of the interface. The 'mtu' vlaue must be between 1518 and 9216."
     defaultto(:absent)
     newvalues(:absent, /^\d+$/)
     validate do |value|
       return if value == :absent
-      raise ArgumentError, "'mtu' vlaue must be between 1518-9216" unless value.to_i >= 1518 && value.to_i <= 9216
+      raise ArgumentError, "An invalid mtu value is entered. The 'mtu' vlaue must be between 1518 and 9216." unless value.to_i >= 1518 && value.to_i <= 9216
     end
   end
 
@@ -77,13 +77,13 @@ Puppet::Type.newtype(:powerconnect_interface) do
   end
 
   newproperty(:add_interface_to_portchannel) do
-    desc "Associate the interface with a portchannel. Value of the port-channel number should be in between 1-128."
+    desc "Associate the interface with a portchannel. The 'Port-channel' vlaue must be between 1 and 128."
     defaultto(:absent)
     newvalues(:absent, /^\d+$/)
     validate do |value|
       return if value == :absent
       return unless value.to_s.match(/^\d+$/)
-      raise ArgumentError, "Port-channel' vlaue must be between 1-128." unless value.to_i >= 1 && value.to_i <= 128
+      raise ArgumentError, "An invalid portchannel value is entered. The 'Port-channel' vlaue must be between 1 and 128." unless value.to_i >= 1 && value.to_i <= 128
     end
   end
 
