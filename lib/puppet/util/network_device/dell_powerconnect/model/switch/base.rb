@@ -9,7 +9,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch::Base
   def self.register(base)
 
     base.register_model(:vlan, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan, /^(\d+)\s\S+/, 'show vlan')
-    base.register_model(:interfaces, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface, /^interface\s+(\S+)\r*$/, 'sh run')
+    base.register_model(:interface, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface, /^interface\s+(\S+)\r*$/, 'sh run')
     base.register_model(:portchannel, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Portchannel, /^interface(\s)+port-channel(.+)$/, 'show run')
 
   end

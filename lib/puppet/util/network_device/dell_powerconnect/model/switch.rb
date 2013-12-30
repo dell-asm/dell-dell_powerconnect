@@ -47,6 +47,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch < Puppet::Ut
   [ 
     :vlan,
     :portchannel,
+    :interface,
   ].each do |key|
     define_method key.to_s do |name|
       grp = params[key].value.find { |group| group.name == name }

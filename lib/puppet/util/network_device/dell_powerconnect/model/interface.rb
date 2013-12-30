@@ -7,7 +7,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/scoped_value'
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   attr_reader :params, :name
-
   def initialize(transport, facts, options)
     super(transport, facts)
     # Initialize some defaults
@@ -36,8 +35,17 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface < Puppet:
 
   def before_update
     super
+    transport.command("interface #{@name}") do |out|
+      out.each_line do |line|
+        Puppet.debug "line = #{line}"
+        if line.include?("An invalid interface has been used for this function.")
+          transport.command("exit")
+          raise Puppet::Error, "The interface #{@name} does not exist. Please provide valid input and try the operation again."
+        end
+      end
+    end
     transport.command("interface #{@name}", :prompt => /\(config-if-#{name}\)#\z/n)
-   end
+  end
 
   def after_update
     transport.command("exit")
