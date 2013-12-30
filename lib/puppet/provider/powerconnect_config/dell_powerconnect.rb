@@ -8,34 +8,36 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     dev = Puppet::Util::NetworkDevice.current
     digestlocalfile=''
     digestserverconfig=''
-    extbackupconfigfile = ''
+    extBackupConfigfile = ''
     flashtmpfile = 'flash://backup-configtemp.scr'
-    backedupprevconfig = false
+    backedupPrevConfig = false
+    
+    Puppet.debug "transport name = #{dev.transport.class.name}"    
     
     ##first check whether there is any backup-config, if so store it to flash and restore it at the end
-    dev.transport.command('show backup-config') do |extbackup|
-      extbackupconfigfile<< extbackup
+    dev.transport.command('show backup-config') do |extBackup|
+      extBackupConfigfile<< extBackup
     end
-    if extbackupconfigfile.include? "Configuration script 'backup-config' not found"
+    if extBackupConfigfile.include? "Configuration script 'backup-config' not found"
       ##There is no existing backup config so do nothing
       Puppet.debug "no previous backup config found"
     else
       ##There is an existing backup config
       Puppet.debug "There is a previous backup config found"
-      executecommand(dev, 'copy backup-config ' + flashtmpfile,"Are you sure you want to start")
+      executeCommand(dev, 'copy backup-config ' + flashtmpfile,"Are you sure you want to start")
     end 
     
     ##copying the file from tftp to backup-config
-    executecommand(dev, 'copy ' + url + ' backup-config',"Are you sure you want to start")
+    executeCommand(dev, 'copy ' + url + ' backup-config',"Are you sure you want to start")
     
-    digestlocalfile = getfilemd5hash(dev, 'show backup-config', 0..18)
+    digestlocalfile = getfileMD5(dev, 'show backup-config', 0..18)
     Puppet.debug "digest1 = #{digestlocalfile}"
           
     if config_type == 'startup'      
-      digestserverconfig = getfilemd5hash(dev, 'show startup-config', 0..19)
+      digestserverconfig = getfileMD5(dev, 'show startup-config', 0..19)
       Puppet.debug "digest2 = #{digestserverconfig}"      
     else
-      digestserverconfig = getfilemd5hash(dev, 'show running-config', 0..19)
+      digestserverconfig = getfileMD5(dev, 'show running-config', 0..19)
       Puppet.debug "digest2 = #{digestserverconfig}"
     end
     
@@ -44,39 +46,30 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     else 
       if config_type == 'startup'
         Puppet.debug "i am applying the startup config"
-        executecommand(dev, 'copy ' + url + ' startup-config',"Are you sure you want to start")
+        executeCommand(dev, 'copy ' + url + ' startup-config',"Are you sure you want to start")
       else
         Puppet.debug "i am applying the running config"
-        executecommand(dev, 'copy ' + url + ' running-config',"Are you sure you want to start")
+        executeCommand(dev, 'copy ' + url + ' running-config',"Are you sure you want to start")
       end
     end
        
-    if backedupprevconfig == true
+    if backedupPrevConfig == true
       Puppet.debug "i am restoring the previous backup config"
       #Restoring the backed up backed up backup config
-      executecommand(dev, 'copy ' + flashtmpfile+ ' backup-config',"Are you sure you want to start")
+      executeCommand(dev, 'copy ' + flashtmpfile+ ' backup-config',"Are you sure you want to start")
       # deleting the backup file from flash
       Puppet.debug "i am deleting the backup file"
-      executecommand(dev, 'delete backup-configtemp.scr',"Delete ")
+      executeCommand(dev, 'delete backup-configtemp.scr',"Delete ")
     end
     
     if config_type == 'startup' && force == :true
       Puppet.debug "i am doing a reload"
-      #executecommand(dev, 'reload', "Are you sure you want to")
-      dev.transport.command('reload') do |out|
-        out.each_line do |line|
-          #Puppet.debug "line = #{line}"
-          if line.include?("Are you sure you want to")
-            Puppet.debug "match found"
-            dev.transport.send("y\r")
-            return
-          end
-        end
-      end  
+      #executeCommand(dev, 'reload', "Are you sure you want to") 
+      rebootswitch  
     end
   end  
   
-  def executecommand(dev, cmd, str)
+  def executeCommand(dev, cmd, str)
     dev.transport.command(cmd) do |out|
       out.each_line do |line|
         if line.include?(str)
@@ -89,7 +82,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end  
   end
   
-  def getfilemd5hash(dev, cmd, slice)
+  def getfileMD5(dev, cmd, slice)
     filecontent = ''
     dev.transport.command(cmd) do |out|   
       filecontent<< out
@@ -105,5 +98,68 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end
     digestlocalfile = Digest::MD5.hexdigest(filecontent)
     return digestlocalfile
+  end
+  
+  def rebootswitch()
+    dev = Puppet::Util::NetworkDevice.current
+    flagfirstresponse=false
+    flagsecondresponse=false
+    flagthirdresponse=false
+
+    dev.transport.command("reload")  do |out|
+      firstresponse =out.scan("Are you sure you want to continue")
+      secondresponse = out.scan("Are you sure you want to reload the stack")
+      unless firstresponse.empty?
+        flagfirstresponse=true
+        break
+      end
+      unless secondresponse.empty?
+        flagsecondresponse=true
+        break
+      end
+    end
+
+    #Some times sending reload command returning with console prompt without doing anything, in that case retry max for 3 times
+#    if (!flagfirstresponse && !flagsecondresponse) && rebootrycount<3
+#      Puppet.debug "i am here 1"
+#      rebootrycount=rebootrycount+1
+#      rebootswitch()
+#    end
+
+    if flagfirstresponse
+      dev.transport.command("y") do |out|
+        thirdresponse = out.scan("Are you sure you want to reload the stack")
+        unless thirdresponse.empty?
+          flagthirdresponse=true
+          break
+        end
+      end
+      if flagthirdresponse
+        dev.transport.send("y\r") do |out|
+        end
+      else
+        Puppet.debug "ELSE BLOCK1.2"
+      end
+    else
+      Puppet.debug "ELSE BLOCK1.1"
+    end
+    if flagsecondresponse
+      dev.transport.send("y\r") do |out|
+        #without this block expecting for prompt and so hanging
+        break
+      end
+    else
+      Puppet.debug "ELSE BLOCK2"
+    end
+
+    #Sleep for 3 mins t wait for switch to come up
+    Puppet.info("Going to sleep for 3 minutes, for switch reboot...")
+    sleep 180
+
+    #Reesatblish transport session
+    Puppet.info("Trying to reconnect to switch...")
+    dev.connect_transport
+    dev.switch.transport=dev.transport
+    Puppet.info("Session established...")
   end
 end
