@@ -6,6 +6,10 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
   def run(url, forceupdate)
     dev = Puppet::Util::NetworkDevice.current
     txt = ''
+    image1version = ''
+    image2version = ''
+    bootimage = 'image2'
+    yesflag1 = false
     currentfirmwareversion = dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
     Puppet.debug "Current Firmware Version #{currentfirmwareversion}"
@@ -19,8 +23,13 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
     dev.transport.command('copy ' + url + ' image') do |out|
       out.each_line do |line|
-        if line.start_with?("Are you sure you want to start")
-          dev.transport.send("y\r")
+        if line.start_with?("Are you sure you want to start") && yesflag1 == false
+          if dev.transport.class.name.include?('Ssh')
+            dev.transport.send("y")
+          else
+            dev.transport.send("y\r")
+          end
+          yesflag1 = true
         end
       end
       txt << out
@@ -32,8 +41,23 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       Puppet.debug(msg)
       raise msg
     end
+    
+    dev.transport.command('show version') do |out|
+      out.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
+        Puppet.debug "image1version = #{arr[0]}"
+        Puppet.debug "image2version = #{arr[1]}"
+        image1version = arr[0]
+        image2version = arr[1]
+      end
+    end
+    
+    if image1version.eql?(newfirmwareversion)
+      bootimage = "image1"
+    else
+      bootimage = "image2"
+    end
 
-    dev.transport.command('boot system image2') do |out|
+    dev.transport.command('boot system ' + bootimage) do |out|
       txt << out
     end
     
