@@ -37,6 +37,11 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Telnet < Puppet::Util
       lines
     end
 
+  def sendwithoutnewline(line, noop = false)
+      #Puppet.debug("telnet: OUT #{line}") if Puppet[:debug]
+      @telnet.print(line) unless noop
+    end
+    
     def send(line, noop = false)
       #Puppet.debug("telnet: OUT #{line}") if Puppet[:debug]
       @telnet.puts(line) unless noop

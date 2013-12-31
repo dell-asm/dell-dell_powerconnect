@@ -75,10 +75,10 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     dev.transport.command('update bootcode') do |out|
       out.each_line do |line|
         if line.start_with?("Update bootcode and reset")
-          dev.transport.send("y")
+          dev.transport.sendwithoutnewline("y")
         end
         if line.start_with?("Are you sure you want to continue")
-          dev.transport.send("y")
+          dev.transport.sendwithoutnewline("y")
         end
         if line.start_with?("Validating boot code from image")
           Puppet.debug "Rebooting the switch."
