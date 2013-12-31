@@ -11,9 +11,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     extBackupConfigfile = ''
     flashtmpfile = 'flash://backup-configtemp.scr'
     backedupPrevConfig = false
-    
-    Puppet.debug "transport name = #{dev.transport.class.name}"    
-    
+        
     ##first check whether there is any backup-config, if so store it to flash and restore it at the end
     dev.transport.command('show backup-config') do |extBackup|
       extBackupConfigfile<< extBackup
@@ -28,16 +26,16 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end 
     
     ##copying the file from tftp to backup-config
-    executeCommand(dev, 'copy ' + url + ' backup-config',"Are you sure you want to start")
+    executeCommand(dev, 'copy ' + url + 'backup-config',"Are you sure you want to start")
     
-    digestlocalfile = getfileMD5(dev, 'show backup-config', 0..18)
+    digestlocalfile = getfileMD5(dev, 'backup-config', 0..18)
     Puppet.debug "digest1 = #{digestlocalfile}"
           
     if config_type == 'startup'      
-      digestserverconfig = getfileMD5(dev, 'show startup-config', 0..19)
+      digestserverconfig = getfileMD5(dev, 'startup-config', 0..19)
       Puppet.debug "digest2 = #{digestserverconfig}"      
     else
-      digestserverconfig = getfileMD5(dev, 'show running-config', 0..19)
+      digestserverconfig = getfileMD5(dev, 'running-config', 0..19)
       Puppet.debug "digest2 = #{digestserverconfig}"
     end
     
@@ -45,25 +43,25 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       Puppet.info "No Configuration change"
     else 
       if config_type == 'startup'
-        Puppet.debug "i am applying the startup config"
+        Puppet.debug "Applying the startup config"
         executeCommand(dev, 'copy ' + url + ' startup-config',"Are you sure you want to start")
       else
-        Puppet.debug "i am applying the running config"
+        Puppet.debug "Applying the running config"
         executeCommand(dev, 'copy ' + url + ' running-config',"Are you sure you want to start")
       end
     end
        
     if backedupPrevConfig == true
-      Puppet.debug "i am restoring the previous backup config"
+      Puppet.debug "Restoring the previous backup config"
       #Restoring the backed up backed up backup config
       executeCommand(dev, 'copy ' + flashtmpfile+ ' backup-config',"Are you sure you want to start")
       # deleting the backup file from flash
-      Puppet.debug "i am deleting the backup file"
+      Puppet.debug "Deleting the backup file"
       executeCommand(dev, 'delete backup-configtemp.scr',"Delete ")
     end
     
     if config_type == 'startup' && force == :true
-      Puppet.debug "i am doing a reload"
+      Puppet.debug "Doing a reload"
       #executeCommand(dev, 'reload', "Are you sure you want to") 
       rebootswitch  
     end
@@ -82,11 +80,17 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end  
   end
   
-  def getfileMD5(dev, cmd, slice)
+  def getfileMD5(dev, configtype, slice)
     filecontent = ''
-    dev.transport.command(cmd) do |out|   
+    dev.transport.command('show '+configtype) do |out|   
       filecontent<< out
     end
+    compareStr = "Configuration script "+"'"+configtype+"'"+" not found"
+    if filecontent.include? compareStr
+      digestlocalfile = 0
+      return digestlocalfile
+    end
+  
     if dev.transport.class.name.include? 'Telnet'
       filecontent.slice!(slice)
     else
