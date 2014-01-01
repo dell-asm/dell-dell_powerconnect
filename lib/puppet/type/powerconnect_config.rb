@@ -10,6 +10,8 @@ Puppet::Type.newtype(:powerconnect_config) do
   newparam(:url) do     
     validate do |url|
       raise ArgumentError, "Urlmust be a in format of tftp://${deviceRepoServerIPAddress}/${fileLocation} " unless url.is_a? String
+      raise ArgumentError, "Unsupporte file format, supported file format is scr" unless url.end_with?('.scr')
+      raise ArgumentError, "Tftp is the only supported file transfer protocol" unless url.start_with?('tftp://')
     end
   end  
 
