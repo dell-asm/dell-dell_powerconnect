@@ -2,13 +2,13 @@
 # Access Mechanism 
 # --------------------------------------------------------------------------
 
-The Dell PowerConnect switch module uses Network Device functionality of Puppet to interact with the PowerConnect switch.
+The Dell PowerConnect switch module uses the Network Device functionality of Puppet to interact with the PowerConnect switches.
 
 # --------------------------------------------------------------------------
 #  Supported Functionality
 # --------------------------------------------------------------------------
 
-	- Apply Configuration Update on the Switch
+	- Apply Configuration Update on the switch
 
 
 # -------------------------------------------------------------------------
@@ -17,12 +17,12 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 
 
   1. Apply Configuration Update on the Switch
-  		This will update the startup or running configuration of the switch.
+  		This method updates the startup or running configuration of the switch.
 
     
 
 # -------------------------------------------------------------------------
-# Summary of parameters.
+# Summary of Parameters
 # -------------------------------------------------------------------------
 
 	name: (Required)This parameter defines a dummy configuration name.
@@ -31,18 +31,18 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 	     The value must be in the format tftp://${TFTPServerIPAddress}/${configFileLocation}
 	     
 	config_type: This parameter determines whether the provided configuration is startup or running configuration.
-	             The possible values are startup and running. The default value is running.
-	             If the value is startup, then the startup configuration will be updated.
-	             If the value is running, then the running configuration will be updated.
+	             The possible values are "startup" and "running". The default value is "running".
+	             If the value is "startup", then the startup configuration will be updated.
+	             If the value is "running', then the running configuration will be updated.
 				 
 	force: This parameter is used to force configuration update even when both the source and destination configuration matches
-			The possible values are true and false. Default value is false.
-			If the value is false, then the configuration is only updated if the source and destinations files are different
-			If the value is true, then the configuration is updated even if both files matches.
+			The possible values are "true" and "false". Default value is "false".
+			If the value is "false", then the configuration is only updated if the source and destinations files are different
+			If the value is "true", then the configuration is updated even if both files matches.
     
     
 # -------------------------------------------------------------------------
-# Parameter signature 
+# Parameter Signature 
 # -------------------------------------------------------------------------
 
 	node "$switch_fqdn" {
@@ -62,7 +62,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Usage
 # --------------------------------------------------------------------------
    Refer to the examples in the manifest directory.
-   The following file capture the details for the sample init.pp and supported files:
+   The following file contains the details for the sample init.pp and supported files:
 
     - configuration_apply.pp
 	
@@ -70,7 +70,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
    
    powerconnect_config {
        'config1':
-	   url            => 'tftp://10.10.10.10/startup.bak',
+	   url            => 'tftp://10.10.10.10/startup.scr',
 	   config_type    => 'startup',
 	   force 		  => 'false';
    }

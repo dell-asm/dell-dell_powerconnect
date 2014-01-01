@@ -2,7 +2,7 @@
 # Access Mechanism 
 # --------------------------------------------------------------------------
 
-The Dell PowerConnect switch module uses Network Device functionality of Puppet to interact with the PowerConnect switch.
+The Dell PowerConnect switch module uses the Network Device functionality of Puppet to interact with the PowerConnect switches.
 
 # --------------------------------------------------------------------------
 #  Supported Functionality
@@ -18,30 +18,30 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 
   1. Create
 
-     The create method creates a vlan on PowerConnect switch as per the parameters specified in the definition. 
+     The Create method functionality creates a VLAN on the PowerConnect switch based on the parameters specified in the definition. 
 
    
   2. Remove
 
-     The remove method deletes the vlan from PowerConnect switch.  
+     The Remove method functionality deletes the VLAN from the PowerConnect switch.  
 
 
 # -------------------------------------------------------------------------
-# Summary of parameters.
+# Summary of Parameters
 # -------------------------------------------------------------------------
 
-	name: (Required)ID of the VLAN.
+	name: (Required) This parameter defines the ID of the VLAN.
 	
-    ensure: (Required) This parameter is required to call either create or remove method.
-    		Possible values: present/absent
-    		If its value is set to present, create method will be invoked.
-    		If its value is set to absent, remove method will be invoked.
+    ensure: (Required) This parameter is required to call either 'create' or 'remove' method.
+    		The possible values are: "present" or "absent"
+    		If the value is set to "present", the 'Create' method is invoked.
+    		If the value is set to "absent", the 'Remove' method is invoked.
 
-    vlan_name: Description of the VLAN
+    vlan_name: This parameter defines the description of the VLAN.
     
     
 # -------------------------------------------------------------------------
-# Parameter signature 
+# Parameter Signature 
 # -------------------------------------------------------------------------
 
 #Create or Remove VLANs
@@ -61,7 +61,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Usage
 # --------------------------------------------------------------------------
    Refer to the examples in the manifest directory.
-   The following file capture the details for the sample init.pp and supported files:
+   The following file contains the details of the sample init.pp and supported files:
 
     - vlan_create_remove.pp
 	
@@ -73,7 +73,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 			ensure              =>  present,
    }
 
-   A user can create an init.pp file based on the above sample files and call the "puppet device" command , for example: 
+   A user can create an init.pp file based on the above sample files and call the "puppet device" command, for example: 
    # puppet device
 
 #-------------------------------------------------------------------------------------------------------------------------
