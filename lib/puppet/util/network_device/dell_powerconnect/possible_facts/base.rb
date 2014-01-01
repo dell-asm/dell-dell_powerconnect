@@ -67,6 +67,44 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd 'show memory cpu'
     end
     
+    base.register_param 'switchstate' do
+      state = 'Unknown'
+      match do |txt|
+        txt.scan(/(.*)\s+(\w+)\s+(\d.+)$/) do |arr| 
+          state = arr[1]
+        end
+        state
+      end
+      cmd 'show switch'
+    end  
+    
+    base.register_param 'powerstate' do
+      match do |txt|
+        txt.scan(/^[\d+]\s+System\s+(\S+)/).flatten.first 
+      end
+      cmd 'show system power'
+    end
+    
+    base.register_param 'macaddress' do
+      match do |txt|
+        txt.scan(/^Burned In MAC Address[.]+\s+(\S+)/).flatten.first 
+      end
+      cmd 'show ip interface'
+    end
+    
+    base.register_param 'managementip' do
+      ip = ''
+      match do |txt|
+        txt.scan(/^(\S+)\s+(\S+)\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)$/) do |arr|
+          if arr[1].to_s.eql?('Up') && arr[2] != '0.0.0.0'
+            ip = arr[2]
+          end 
+        end 
+        ip
+      end
+      cmd 'show ip interface'
+    end     
+    
     base.register_param 'interfaces' do
       all_interfaces = ''
       match do |txt|
