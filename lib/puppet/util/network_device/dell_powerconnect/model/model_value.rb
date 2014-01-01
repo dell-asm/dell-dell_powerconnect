@@ -1,7 +1,6 @@
 #Module for parsing model value
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
-require 'puppet/util/monkey_patches_powerconnect'
 
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ModelValue < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
 

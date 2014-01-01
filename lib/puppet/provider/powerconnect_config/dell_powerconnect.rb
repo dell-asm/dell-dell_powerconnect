@@ -63,7 +63,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     if config_type == 'startup' && force == :true
       Puppet.debug "Doing a reload"
       #executeCommand(dev, 'reload', "Are you sure you want to") 
-      rebootswitch  
+      rebootswitch2  
+      
+      Puppet.info("Going to sleep for 3 minutes, for switch reboot...")
+      sleep 180
+      
+      initializeswitch      
     end
   end  
   
@@ -104,66 +109,28 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     return digestlocalfile
   end
   
-  def rebootswitch()
+  def rebootswitch2()
     dev = Puppet::Util::NetworkDevice.current
-    flagfirstresponse=false
-    flagsecondresponse=false
-    flagthirdresponse=false
-
-    dev.transport.command("reload")  do |out|
-      firstresponse =out.scan("Are you sure you want to continue")
-      secondresponse = out.scan("Are you sure you want to reload the stack")
-      unless firstresponse.empty?
-        flagfirstresponse=true
-        break
-      end
-      unless secondresponse.empty?
-        flagsecondresponse=true
-        break
-      end
-    end
-
-    #Some times sending reload command returning with console prompt without doing anything, in that case retry max for 3 times
-#    if (!flagfirstresponse && !flagsecondresponse) && rebootrycount<3
-#      Puppet.debug "i am here 1"
-#      rebootrycount=rebootrycount+1
-#      rebootswitch()
-#    end
-
-    if flagfirstresponse
-      dev.transport.command("y") do |out|
-        thirdresponse = out.scan("Are you sure you want to reload the stack")
-        unless thirdresponse.empty?
-          flagthirdresponse=true
-          break
+    dev.transport.command('reload') do |out|
+      out.each_line do |line|
+        if line.start_with?("Are you sure you want to continue")
+          dev.transport.sendwithoutnewline("y")
+        end
+        if line.start_with?("Are you sure you want to reload the stack")
+          dev.transport.sendwithoutnewline("y")
+          return 
         end
       end
-      if flagthirdresponse
-        dev.transport.send("y\r") do |out|
-        end
-      else
-        Puppet.debug "ELSE BLOCK1.2"
-      end
-    else
-      Puppet.debug "ELSE BLOCK1.1"
     end
-    if flagsecondresponse
-      dev.transport.send("y\r") do |out|
-        #without this block expecting for prompt and so hanging
-        break
-      end
-    else
-      Puppet.debug "ELSE BLOCK2"
-    end
-
-    #Sleep for 3 mins t wait for switch to come up
-    Puppet.info("Going to sleep for 3 minutes, for switch reboot...")
-    sleep 180
-
+  end
+  
+  def initializeswitch
+    dev = Puppet::Util::NetworkDevice.current
     #Reesatblish transport session
     Puppet.info("Trying to reconnect to switch...")
     dev.connect_transport
     dev.switch.transport=dev.transport
     Puppet.info("Session established...")
   end
+  
 end

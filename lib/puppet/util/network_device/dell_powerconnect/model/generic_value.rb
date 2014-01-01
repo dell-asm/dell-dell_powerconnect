@@ -1,6 +1,5 @@
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/value_helper'
-require 'puppet/util/monkey_patches_powerconnect'
 
 #Value class which provides basic functions for managing 
 #parameter state change

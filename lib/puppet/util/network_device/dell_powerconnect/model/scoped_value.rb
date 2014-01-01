@@ -1,6 +1,5 @@
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
-require 'puppet/util/monkey_patches_powerconnect'
 
 #Value class which represents parameters whose state is
 #base on the scope of command output
