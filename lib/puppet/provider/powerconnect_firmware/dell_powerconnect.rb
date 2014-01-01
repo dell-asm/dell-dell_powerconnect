@@ -3,13 +3,14 @@ require 'puppet/provider/dell_powerconnect'
 
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
   mk_resource_methods
-  def run(url, forceupdate)
+  def run(url, forceupdate, saveconfig)
     dev = Puppet::Util::NetworkDevice.current
     txt = ''
     image1version = ''
     image2version = ''
     bootimage = 'image2'
     yesflag1 = false
+    yesflag2 = false
     currentfirmwareversion = dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
     Puppet.debug "Current Firmware Version #{currentfirmwareversion}"
@@ -61,6 +62,18 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       txt << out
     end
     
+    if saveconfig == :true
+      dev.transport.command('copy running-config startup-config') do |out|
+        out.each_line do |line|
+          if line.start_with?("Are you sure you want to save")&& yesflag2 == false
+            dev.transport.sendwithoutnewline("y")
+            yesflag2 = true
+          end
+        end
+        txt << out
+      end
+    end  
+    
     successmsg = "Firmware Update is successful."
     failedmsg = "Firmware Update Failed"
     status = rebootswitch()
@@ -81,7 +94,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
           dev.transport.sendwithoutnewline("y")
         end
         if line.start_with?("Validating boot code from image")
-          Puppet.debug "Rebooting the switch."
+          Puppet.debug "Rebooting the switch.Wait for 5 minutes."
           return "Successful"
         end
       end

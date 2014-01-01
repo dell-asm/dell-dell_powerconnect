@@ -18,6 +18,12 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     newvalues(:true, :false)
     defaultto :false
   end
+  
+  newparam(:saveconfig) do
+    desc "Whether the switch configuration should be saved before rebooting the switch"
+    newvalues(:true, :false)
+    defaultto :true
+  end
 
   newproperty(:returns, :event => :executed_command) do |property|
     munge do |value|
@@ -42,7 +48,7 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     def sync
 
       event = :executed_command
-      out = provider.run(self.resource[:imageurl], self.resource[:forceupdate])
+      out = provider.run(self.resource[:imageurl], self.resource[:forceupdate], self.resource[:saveconfig])
       event
     end
   end
