@@ -84,6 +84,8 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
       transport.command(construct_cmd)
     when :absent
       transport.command("no " + construct_cmd)
+    else
+      "do nothing."
     end
   end
 end

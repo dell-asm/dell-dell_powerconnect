@@ -48,8 +48,10 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util
       transport.command("exit")
     when :absent
       transport.command("no vlan #{name}")
+     else
+        "default value"
     end
-  end
+end
 
   def mod_path_base
     return 'puppet/util/network_device/dell_powerconnect/model/vlan'
