@@ -2,7 +2,7 @@
 # Access Mechanism 
 # --------------------------------------------------------------------------
 
-The Dell PowerConnect switch module uses Network Device functionality of Puppet to interact with the PowerConnect switch.
+The Dell PowerConnect switch module uses the Network Device functionality of Puppet to interact with the PowerConnect switch.
 
 # --------------------------------------------------------------------------
 #  Supported Functionality
@@ -17,27 +17,28 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 
 
   1. Apply Firmware Update on the Switch
-  		This will update the firmware of the switch with a new image.
+  		This functionality updates the new firmware image on the switch.
 
     
 
 # -------------------------------------------------------------------------
-# Summary of parameters.
+# Summary of Parameters
 # -------------------------------------------------------------------------
 
 	name: (Required)This parameter defines a dummy image name.
 	 
 	imageurl: This parameter defines the TFTP URL of the firmware image.
-	          The value must be in the format tftp://${TFTPServerIPAddress}/${imageLocation}
-	          The image name must have the firmware version appended to it eg. PC7000_M6348v5.1.2.3.stk
+	          The value must be in the format: tftp://${TFTPServerIPAddress}/${imageLocation}
+	          The image name must contain the firmware version appended to it. For example, PC7000_M6348v5.1.2.3.stk
 	
-	forceupdate: This parameter determines whether firmware updates can be forcefully applied on the switch.
-	             The possible values are true and false. The default value is false.
-	             If the value is true, then the firmware image will be applied even if it's the same version as existing firmware version.
+	forceupdate: This parameter determines whether to force firmware update on the switch.
+	             The possible values are "true' or "false". The default value is "false".
+	             If this parameter is set to "true", the firmware is updated on the switch 
+				 even if the firmware version that you want to update is same as the existing firmware version configured on the switch.
     
     
 # -------------------------------------------------------------------------
-# Parameter signature 
+# Parameter Signature 
 # -------------------------------------------------------------------------
 
 	node "$switch_fqdn" {
@@ -57,7 +58,7 @@ The Dell PowerConnect switch module uses Network Device functionality of Puppet 
 # Usage
 # --------------------------------------------------------------------------
    Refer to the examples in the manifest directory.
-   The following file capture the details for the sample init.pp and supported files:
+   The following file contains the details of the sample init.pp and supported files:
 
     - firmware_upgrade.pp
 	
