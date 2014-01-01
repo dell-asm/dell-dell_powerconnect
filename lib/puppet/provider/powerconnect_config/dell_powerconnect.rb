@@ -60,7 +60,8 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       executeCommand(dev, 'delete backup-configtemp.scr',"Delete ")
     end
     
-    if config_type == 'startup' && force == :true
+    Puppet.debug "digest1 = #{digestlocalfile} && digest2 = #{digestserverconfig}"
+    if config_type == 'startup' && (digestlocalfile != digestserverconfig || force == :true)
       Puppet.debug "Doing a reload"
       #executeCommand(dev, 'reload', "Are you sure you want to") 
       rebootswitch2  
