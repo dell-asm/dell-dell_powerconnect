@@ -9,8 +9,8 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     image1version = ''
     image2version = ''
     bootimage = 'image2'
-    yesflag1 = false
-    yesflag2 = false
+    yesflaga = false
+    yesflagb = false
     currentfirmwareversion = dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
     Puppet.debug "Current Firmware Version #{currentfirmwareversion}"
@@ -24,13 +24,13 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
     dev.transport.command('copy ' + url + ' image') do |out|
       out.each_line do |line|
-        if line.start_with?("Are you sure you want to start") && yesflag1 == false
+        if line.start_with?("Are you sure you want to start") && yesflaga == false
           if dev.transport.class.name.include?('Ssh')
             dev.transport.send("y")
           else
             dev.transport.send("y\r")
           end
-          yesflag1 = true
+          yesflaga = true
         end
       end
       txt << out
@@ -65,9 +65,9 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     if saveconfig == :true
       dev.transport.command('copy running-config startup-config') do |out|
         out.each_line do |line|
-          if line.start_with?("Are you sure you want to save")&& yesflag2 == false
+          if line.start_with?("Are you sure you want to save")&& yesflagb == false
             dev.transport.sendwithoutnewline("y")
-            yesflag2 = true
+            yesflagb = true
           end
         end
         txt << out
