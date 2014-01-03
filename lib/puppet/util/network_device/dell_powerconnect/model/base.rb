@@ -9,7 +9,6 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
   include Puppet::Util::NetworkDevice::Dsl_powerconnect
 
   attr_accessor :ensure, :name, :transport, :facts
-
   def initialize(transport, facts)
     @transport = transport
     @facts = facts
@@ -61,7 +60,32 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
   end
 
   def after_update
+    txt = ''
+    yesflag = false
     transport.command("end")
+    transport.command("copy running-config startup-config") do |out|
+    Puppet.debug("Copy config started")
+	out.each_line do |line|
+        if line.start_with?("Are you sure you want to save") && yesflag == false
+          if transport.class.name.include?('Ssh')
+            transport.send("y")
+          else
+            transport.send("y\r")
+          end
+          yesflag = true
+        end
+      end
+      Puppet.debug("done")
+      txt << out
+    end
+    item = txt.scan("Configuration Saved!")
+    if item.empty?
+      msg="Failed to save configuration."
+      Puppet.debug(msg)
+      raise msg
+    else
+      Puppet.debug("Configuration saved.")
+    end
   end
 
   def get_base_cmd

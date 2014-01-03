@@ -28,8 +28,8 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
         transport.command("switchport general allowed vlan add #{value} tagged") do |out|
           out.each_line do |line|
             if line.match(/ERROR:/)
-              Puppet.debug "#{line}"
-              raise "#{line}"
+              Puppet.warning "#{line}"
+              #raise "#{line}"
             end
           end
         end
@@ -52,8 +52,8 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
         transport.command("switchport trunk allowed vlan add #{value}") do |out|
           out.each_line do |line|
             if line.match(/ERROR:/)
-              Puppet.debug "#{line}"
-              raise "#{line}"
+              Puppet.warning "#{line}"
+              #raise "#{line}"
             end
           end
         end
