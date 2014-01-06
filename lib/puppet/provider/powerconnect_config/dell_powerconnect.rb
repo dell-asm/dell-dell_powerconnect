@@ -55,7 +55,11 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       Puppet.debug "digest2 = #{digestserverconfig}"
 
       if digestlocalfile != digestserverconfig || force == :true
-        executeCommand(dev, 'copy backup-config ' + config_type+'-config',"Are you sure you want to start")
+        executeCommand(dev, 'copy '+ url +" "+ config_type+'-config',"Are you sure you want to start")
+      end
+      
+      if digestlocalfile == digestserverconfig && force == :false
+        Puppet.info("Switch is having the same configuration as that of url configured, so configuration copy is skipped.")
       end
 
       executeCommand(dev, 'delete backup-config',"Delete ")
