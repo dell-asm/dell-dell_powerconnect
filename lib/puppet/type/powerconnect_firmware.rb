@@ -18,7 +18,7 @@ Puppet::Type.newtype(:powerconnect_firmware) do
     newvalues(:true, :false)
     defaultto :false
   end
-  
+
   newparam(:saveconfig) do
     desc "Whether the switch configuration should be saved before rebooting the switch"
     newvalues(:true, :false)

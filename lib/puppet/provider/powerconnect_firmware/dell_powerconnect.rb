@@ -42,7 +42,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       Puppet.debug(msg)
       raise msg
     end
-    
+
     dev.transport.command('show version') do |out|
       out.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
         Puppet.debug "image1version = #{arr[0]}"
@@ -51,7 +51,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
         image2version = arr[1]
       end
     end
-    
+
     if image1version.eql?(newfirmwareversion)
       bootimage = "image1"
     else
@@ -61,7 +61,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     dev.transport.command('boot system ' + bootimage) do |out|
       txt << out
     end
-    
+
     if saveconfig == :true
       dev.transport.command('copy running-config startup-config') do |out|
         out.each_line do |line|
@@ -72,8 +72,8 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
         end
         txt << out
       end
-    end  
-    
+    end
+
     successmsg = "Firmware Update is successful."
     failedmsg = "Firmware Update Failed"
     status = rebootswitch()
@@ -82,7 +82,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     status == "Successful" ? (return successmsg) :(return failedmsg)
 
   end
-  
+
   def rebootswitch()
     dev = Puppet::Util::NetworkDevice.current
     dev.transport.command('update bootcode') do |out|
