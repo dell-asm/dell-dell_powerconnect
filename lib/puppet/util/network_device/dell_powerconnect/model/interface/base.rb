@@ -89,7 +89,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
       remove { |*_| }
     end
     configureinterface(base, :shutdown) do
-      match /^\s*shutdown\s+(.*?)\s*$/
+      match /shutdown/
       add do |transport, value|
         if value == :true
           transport.command("shutdown")

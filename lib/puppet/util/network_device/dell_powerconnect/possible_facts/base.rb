@@ -32,6 +32,13 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd 'show hosts'
     end
 
+   base.register_param 'defaultdomain' do
+      match do |txt|
+        txt.scan(/^Default\s+domain:\s+(.+)$/).flatten.first
+      end
+      cmd 'show hosts'
+    end
+
     base.register_param 'servicetag' do
       match do |txt|
         txt.scan(/^Service\s+Tag:\s+(.+)$/).flatten.first
