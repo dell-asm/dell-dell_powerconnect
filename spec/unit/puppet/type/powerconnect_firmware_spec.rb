@@ -36,10 +36,6 @@ describe Puppet::Type.type(:powerconnect_firmware) do
   end
 
   describe "when validating attribute values" do
-    before do
-      @provider = stub 'provider', :class => described_class.defaultprovider, :clear => nil
-      described_class.defaultprovider.stubs(:new).returns(@provider)
-    end
 
     describe "for name" do
       it "should allow a valid TFTP name" do
