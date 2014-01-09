@@ -1,56 +1,66 @@
 require 'puppet/util/network_device'
 require 'puppet/provider/dell_powerconnect'
+require 'puppet/provider/powerconnect_messages'
+require 'puppet/provider/powerconnect_responses'
 
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
-  
-  @doc = "Updates the PowerConnect switch firmware"
-  
   mk_resource_methods
+  $dev = Puppet::Util::NetworkDevice.current
   
   def run(url, forceupdate, saveconfig)
-    dev = Puppet::Util::NetworkDevice.current
+    
+    if exists(url) == true && forceupdate == false
+      Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_VERSION_EXISTS_INFO)
+      return
+    else
+      update(url)
+    end
+    
+    if saveconfig == true 
+      save_switch_config()
+    end
+   
+    status = reboot_switch()
+    
+    if status == true
+      ping_switch()
+      Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_SUCCESSFUL_INFO)
+    else
+      raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_ERROR
+    end
+    
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SUCCESSFUL_INFO)
+    return status
+
+  end
+  
+  def exists(url)
+    currentfirmwareversion = $dev.switch.facts['Active_Software_Version']
+    newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::CHECK_FIRMWARE_VERSION_DEBUG%[currentfirmwareversion,newfirmwareversion])
+    if currentfirmwareversion.to_s.strip.eql?(newfirmwareversion.to_s.strip)
+      return true
+    else
+      return false
+    end
+  end
+  
+  
+  def update(url)
     txt = ''
     image1version = ''
     image2version = ''
     bootimage = 'image2'
-    yesflaga = false
-    yesflagb = false
-    currentfirmwareversion = dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
-    Puppet.debug "Current Firmware Version #{currentfirmwareversion}"
-    Puppet.debug "New Firmware Version #{newfirmwareversion}"
-    Puppet.debug("ForceUpdate : #{forceupdate}")
-    if currentfirmwareversion.to_s.strip.eql?(newfirmwareversion.to_s.strip) && forceupdate == :false
-      txt = "Existing Firmware versions is same as new Firmware version, so skipping firmware update"
-      Puppet.debug(txt)
-      return txt
-    end
-
-    dev.transport.command('copy ' + url + ' image') do |out|
-      out.each_line do |line|
-        if line.start_with?("Are you sure you want to start") && yesflaga == false
-          if dev.transport.class.name.include?('Ssh')
-            dev.transport.send("y")
-          else
-            dev.transport.send("y\r")
-          end
-          yesflaga = true
-        end
-      end
-      txt << out
-    end
-
-    item = txt.scan("File transfer operation completed successfully")
+    
+    txt = download_image(url)
+    item = txt.scan(Puppet::Provider::Powerconnect_responses::RESPONSE_IMAGE_DOWNLOAD_SUCCESSFUL)
     if item.empty?
-      msg="Firmware update is not successful"
-      Puppet.debug(msg)
-      raise msg
+      raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_IMAGE_DOWNLOAD_ERROR
     end
 
-    dev.transport.command('show version') do |out|
+    $dev.transport.command('show version') do |out|
       out.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
-        Puppet.debug "image1version = #{arr[0]}"
-        Puppet.debug "image2version = #{arr[1]}"
         image1version = arr[0]
         image2version = arr[1]
       end
@@ -62,48 +72,96 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       bootimage = "image2"
     end
 
-    dev.transport.command('boot system ' + bootimage) do |out|
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SET_BOOTIMAGE_DEBUG%[bootimage])
+    $dev.transport.command('boot system ' + bootimage) do |out|
       txt << out
     end
-
-    if saveconfig == :true
-      dev.transport.command('copy running-config startup-config') do |out|
-        out.each_line do |line|
-          if line.start_with?("Are you sure you want to save")&& yesflagb == false
-            dev.transport.sendwithoutnewline("y")
-            yesflagb = true
+    
+  end
+  
+  def download_image(url)
+    yesflag = false
+    txt = ''
+    
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_DOWNLOAD_DEBUG)
+    $dev.transport.command('copy ' + url + ' image') do |out|
+      out.each_line do |line|
+        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_START_IMAGE_DOWNLOAD) && yesflag == false
+          if $dev.transport.class.name.include?('Ssh')
+            $dev.transport.send("y")
+          else
+            $dev.transport.send("y\r")
           end
+          yesflag = true
         end
-        txt << out
       end
+      txt << out
     end
-
-    successmsg = "Firmware Update is successful."
-    failedmsg = "Firmware Update Failed"
-    status = rebootswitch()
-    sleep 300
-    status == "Successful" ? Puppet.debug(successmsg) : Puppet.debug(failedmsg)
-    status == "Successful" ? (return successmsg) :(return failedmsg)
+    return txt
 
   end
-
-  def rebootswitch()
-    dev = Puppet::Util::NetworkDevice.current
-    dev.transport.command('update bootcode') do |out|
+  
+  def save_switch_config()
+    yesflag = false
+    txt = ''
+    
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SAVE_CONFIG_INFO)
+    $dev.transport.command('copy running-config startup-config') do |out|
       out.each_line do |line|
-        if line.start_with?("Update bootcode and reset")
-          dev.transport.sendwithoutnewline("y")
+        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE)&& yesflag == false
+          $dev.transport.sendwithoutnewline("y")
+          yesflag = true
         end
-        if line.start_with?("Are you sure you want to continue")
-          dev.transport.sendwithoutnewline("y")
+      end
+      txt << out
+    end
+    
+  end
+
+  def reboot_switch()
+    
+    $dev.transport.command('update bootcode') do |out|
+      out.each_line do |line|
+        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT)
+          $dev.transport.sendwithoutnewline("y")
         end
-        if line.start_with?("Validating boot code from image")
-          Puppet.debug "Rebooting the switch.Wait for 5 minutes."
-          return "Successful"
+        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE_BEFORE_REBOOT)
+          $dev.transport.sendwithoutnewline("y")
+        end
+        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT_SUCCESSFUL)
+          return true
         end
       end
     end
-    return "Failed"
+    
+    return false
+  end
+  
+  def ping_switch()
+    #Sleep for 2 mins to wait for switch to come up
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
+    sleep 120
+
+    Puppet.info(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SWITCH_INFO)
+    for i in 0..20
+      if pingable()
+        Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SUCCESS_DEBUG)
+        break
+      else
+        Puppet.info(Puppet::Provider::Powerconnect_messages::POWERCONNECT_RETRY_PING_INFO)
+        sleep 60
+      end
+    end
+
+    #Re-establish transport session
+    $dev.connect_transport
+    $dev.switch.transport=$dev.transport
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_RECONNECT_SWITCH_DEBUG)
+  end 
+  
+  def pingable()
+    output = `ping -c 4 #{$dev.transport.host}`
+    return (!output.include? "100% packet loss")
   end
 
 end
