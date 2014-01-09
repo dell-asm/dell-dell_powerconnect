@@ -1,5 +1,6 @@
 Puppet::Type.newtype(:powerconnect_config) do
-  @doc = "Apply configuration on powerconnect router or switch."
+  
+  @doc = "Updates the running-config and startup-config of PowerConnect switch"
 
   apply_to_device
 
@@ -7,21 +8,22 @@ Puppet::Type.newtype(:powerconnect_config) do
     isnamevar
   end
 
-  newparam(:url) do     
+  newparam(:url) do    
+    desc = "Defines the TFTP path where the switch configuration file is available"
     validate do |url|
-      raise ArgumentError, "Urlmust be a in format of tftp://${deviceRepoServerIPAddress}/${fileLocation} " unless url.is_a? String
-      raise ArgumentError, "Unsupporte file format, supported file format is scr" unless url.end_with?('.scr')
+      raise ArgumentError, "Url must be in the format tftp://${deviceRepoServerIPAddress}/${fileLocation} " unless url.is_a? String
+      raise ArgumentError, "Unsupported file format, supported file format is scr" unless url.end_with?('.scr')
       raise ArgumentError, "Tftp is the only supported file transfer protocol" unless url.start_with?('tftp://')
     end
   end  
 
   newparam(:config_type) do
-    desc "Whether the provided configuration is startup configuration or running configuration"    
+    desc "Specifies whether the provided configuration is startup or running"    
     newvalues(/((\bstartup\b)|(\brunning\b))/)
   end
   
   newparam(:force) do
-   desc "Whether the provided configuration has to be applied in force"
+   desc "Override any existing configuration"
    newvalues(:true, :false)
    defaultto :false
   end

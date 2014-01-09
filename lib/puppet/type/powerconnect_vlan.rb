@@ -1,12 +1,12 @@
 Puppet::Type.newtype(:powerconnect_vlan) do
-  @doc = "This represents a VLAN configuration on a Dell PowerConnect switch."
+  @doc = "Configures VLANs on a PowerConnect switch"
 
   apply_to_device
 
   ensurable
 
   newparam(:name) do
-    @doc = "The VLAN Id"
+    @doc = "VLAN Id"
     isnamevar
     newvalues(/^\d+$/)
   end

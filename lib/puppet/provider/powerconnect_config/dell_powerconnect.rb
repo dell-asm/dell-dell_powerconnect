@@ -10,6 +10,9 @@ require 'puppet/provider/dell_powerconnect'
 $CALLER_MODULE = "dell_powerconnect"
 
 Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider do
+  
+  @doc = "Updates the running-config and startup-config of PowerConnect switch"
+  
   mk_resource_methods
 
   def run(url, config_type, force)

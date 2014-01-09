@@ -1,5 +1,5 @@
 Puppet::Type.newtype(:powerconnect_firmware) do
-  @doc = "Apply firmware upgrade on powerconnect router or switch."
+  @doc = "Updates the PowerConnect switch firmware"
 
   apply_to_device
 
@@ -8,19 +8,20 @@ Puppet::Type.newtype(:powerconnect_firmware) do
   end
 
   newparam(:imageurl) do
+    desc "Defines the TFTP URL where the firmware file is available"
     validate do |imageurl|
       raise ArgumentError, "Url must be a in format of tftp://${TFTPServerIPAddress}/${imageLocation} " unless imageurl.is_a? String
     end
   end
 
   newparam(:forceupdate) do
-    desc "Whether the provided firmware update has to be applied by force"
+    desc "Overwrite any existing firmware"
     newvalues(:true, :false)
     defaultto :false
   end
 
   newparam(:saveconfig) do
-    desc "Whether the switch configuration should be saved before rebooting the switch"
+    desc "Save the switch running configuration before rebooting"
     newvalues(:true, :false)
     defaultto :true
   end

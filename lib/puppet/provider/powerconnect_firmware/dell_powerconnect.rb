@@ -2,7 +2,11 @@ require 'puppet/util/network_device'
 require 'puppet/provider/dell_powerconnect'
 
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
+  
+  @doc = "Updates the PowerConnect switch firmware"
+  
   mk_resource_methods
+  
   def run(url, forceupdate, saveconfig)
     dev = Puppet::Util::NetworkDevice.current
     txt = ''

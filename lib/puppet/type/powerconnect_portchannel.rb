@@ -1,10 +1,10 @@
 Puppet::Type.newtype(:powerconnect_portchannel) do
-  @doc = "This represents a portchannel configuration on a router or switch."
+  @doc = "Configures the port-channel in a PowerConnect switch"
 
   apply_to_device
   
   newparam(:name) do
-    desc "port channel to be configured"
+    desc "Port-channel number"
     isnamevar
     newvalues(/^\d+$/)
     validate do |value|
@@ -16,12 +16,12 @@ Puppet::Type.newtype(:powerconnect_portchannel) do
   end
 
   newproperty(:allowvlans) do
-    desc "list of vlans to be tagged to the port channel"
+    desc "VLANs to be tagged on to the port-channel"
     newvalues(/^(\d+(-\d+)?,)*\d+(-\d+)?$/)    
   end
   
   newproperty(:removevlans) do
-    desc "list of vlans to be untagged from the port channel"
+    desc "VLANs to be untagged from the port-channel"
     newvalues(/^(\d+(-\d+)?,)*\d+(-\d+)?$/)
   end
     
