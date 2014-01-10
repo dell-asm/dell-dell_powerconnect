@@ -233,6 +233,32 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       end
       cmd 'show running-config'
     end
+    
+    base.register_param 'portchannelstatus' do
+      res = Hash.new
+      portchannels = Hash.new
+      match do |txt|
+        txt.scan(/^(Po[0-9]+)[a-zA-Z0-9 ]+\s+\d+\s+(\S+)$/) do |arr|
+          portchannels[arr[0]] = arr[1]
+        end
+        res["portchannelstatus"] = portchannels.to_json
+        res
+      end
+      cmd 'show interfaces configuration'
+    end
+    
+    base.register_param 'portchannelmap' do
+      res = Hash.new
+      portchannels = Hash.new
+      match do |txt|
+        txt.scan(/^(Po[0-9]+)\s+(Active: |Inactive: )([(Te|Gi)[0-9\/]+, ]+)/) do |arr|
+          portchannels[arr[0]] = arr[2]
+        end
+        res["portchannelmap"] = portchannels.to_json
+        res
+      end
+      cmd 'show interfaces port-channel'
+    end
 
     base.register_param 'Active_Software_Version' do
       match do |txt|
