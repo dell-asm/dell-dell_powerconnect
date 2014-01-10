@@ -11,6 +11,17 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd 'show system'
     end
 
+    base.register_param 'bootimage' do
+      res = ''
+      match do |txt|
+        txt.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
+          res = arr[2]
+        end
+        res
+      end
+      cmd 'show bootvar'
+    end
+
     base.register_param 'systemmodelid' do
       match do |txt|
         txt.scan(/^System\s+Model\s+ID:\s+(.+)$/).flatten.first
@@ -32,7 +43,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd 'show hosts'
     end
 
-   base.register_param 'defaultdomain' do
+    base.register_param 'defaultdomain' do
       match do |txt|
         txt.scan(/^Default\s+domain:\s+(.+)$/).flatten.first
       end
@@ -233,7 +244,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       end
       cmd 'show running-config'
     end
-    
+
     base.register_param 'portchannelstatus' do
       res = Hash.new
       portchannels = Hash.new
@@ -246,7 +257,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       end
       cmd 'show interfaces configuration'
     end
-    
+
     base.register_param 'portchannelmap' do
       res = Hash.new
       portchannels = Hash.new
