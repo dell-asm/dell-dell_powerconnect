@@ -11,11 +11,10 @@ require 'puppet/provider/powerconnect_messages'
 $CALLER_MODULE = "dell_powerconnect"
 
 Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider do
-  
-  @doc = "Updates the running-config and startup-config of PowerConnect switch"
-  
-  mk_resource_methods
 
+  @doc = "Updates the running-config and startup-config of PowerConnect switch"
+
+  mk_resource_methods
   def run(url, config_type, force)
     #begin
     digestlocalfile=''
@@ -25,12 +24,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     backedupPrevConfig = false
     yesflag = false
     txt = ''
-    
+
     @dev = Puppet::Util::NetworkDevice.current
 
     ##first check whether there is any backup-config, if so store it to flash and restore it at the end
     backedupPrevConfig = preUpdateBackupConfigSave(url, flashtmpfile)
-    
+
     digestlocalfile = getBackupConfigMD5
     digestserverconfig = getSwitchConfigMD5(config_type)
     Puppet.debug "digest1 = #{digestlocalfile} && digest2 = #{digestserverconfig}"
@@ -38,7 +37,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     if digestlocalfile != digestserverconfig || force == :true
       applyConfig(url, config_type)
     end
-    
+
     Puppet.debug "force is #{force}"
 
     if digestlocalfile.eql?(digestserverconfig) && force == :false
@@ -58,17 +57,17 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     #    rescue Exception => e
     #      AsmException.new("ASM001", $CALLER_MODULE, e).log_message
     #end
-  end  
-  
+  end
+
   def applyConfig(url, config_type)
     Puppet.info("Applying the configuration")
     executeCommand('copy '+ url +" "+ config_type+'-config',"Are you sure you want to start")
   end
-  
+
   def preUpdateBackupConfigSave(url, flashtmpfile)
     backedupPrevConfig = false
     extBackupConfigfile = ''
-    
+
     @dev.transport.command('show backup-config') do |extBackup|
       extBackupConfigfile<< extBackup
     end
@@ -80,50 +79,50 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       Puppet.debug "There is a previous backup config found"
       saveBackupConfig(flashtmpfile)
       backedupPrevConfig = true
-    end 
+    end
     ##copying the file from tftp to backup-config
     executeCommand('copy ' + url + ' backup-config',"Are you sure you want to start")
     return backedupPrevConfig
   end
-  
+
   def cleanupBackupConfig
     executeCommand('delete backup-config',"Delete ")
   end
-  
+
   def getSwitchConfigMD5(config)
     digest = getfileMD5(config+'-config', 0..19)
     return digest
   end
-  
+
   def getBackupConfigMD5
     digestlocalfile = getfileMD5('backup-config', 0..18)
     Puppet.debug "digest1 = #{digestlocalfile}"
-    if digestlocalfile != 0 
+    if digestlocalfile != 0
       Puppet.debug "File transfer successful"
-    else  
+    else
       Puppet.info "failed to copy the file from the server"
       #raise AsmException.new("ASM004", $CALLER_MODULE, nil, nil)
       raise "Failed to copy the configuration file from the server."
     end
     return digestlocalfile
   end
-  
+
   def startupconfigPostUpdate
     Puppet.debug "Doing a reload"
-    reloadswitch 
+    reloadswitch
     ping_switch
-    initializeswitch  
+    initializeswitch
   end
-  
+
   def restoreOldBackupConfig(flashtmpfile)
     Puppet.debug "Restoring the previous backup config"
     #Restoring the backed up backed up backup config
     executeCommand('copy ' + flashtmpfile+ ' backup-config',"Are you sure you want to start")
     # deleting the backup file from flash
     Puppet.debug "Deleting the backup file"
-    executeCommand('delete backup-configtemp.scr',"Delete ")        
+    executeCommand('delete backup-configtemp.scr',"Delete ")
   end
-  
+
   def executeCommand(cmd, str)
     yesflag = false
     @dev.transport.command(cmd) do |out|
@@ -133,18 +132,18 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
             command = "y"
           else
             command = "y\r"
-          end      
-          @dev.transport.send(command) 
-          yesflag = true          
+          end
+          @dev.transport.send(command)
+          yesflag = true
         end
-      end   
-    end 
-  end  
-  
+      end
+    end
+  end
+
   def getfileMD5(configtype, slice)
     filecontent = ''
-    @dev.transport.command('show '+configtype) do |out|  
-      Puppet.debug "I am here4" 
+    @dev.transport.command('show '+configtype) do |out|
+      Puppet.debug "I am here4"
       filecontent<< out
       Puppet.debug "out = #{out}"
     end
@@ -153,21 +152,21 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       digestlocalfile = 0
       return digestlocalfile
     end
-  
+
     if @dev.transport.class.name.include? 'Telnet'
       filecontent.slice!(slice)
     else
       if @dev.transport.class.name.include? 'Ssh'
         index = filecontent.rindex("!Current Configuration")
         filecontent = filecontent[index..-1]
-        Puppet.debug "I am here5" 
+        Puppet.debug "I am here5"
       else
       end
     end
     digestlocalfile = Digest::MD5.hexdigest(filecontent)
     return digestlocalfile
   end
-  
+
   def reloadswitch()
     yesflag = false
     doubleflag = false
@@ -191,7 +190,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       break
     end
   end
-  
+
   def initializeswitch
     @dev = Puppet::Util::NetworkDevice.current
     #Reesatblish transport session
@@ -200,7 +199,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     @dev.switch.transport=@dev.transport
     Puppet.info("Session established...")
   end
-  
+
   def getBackupConfig
     fileOut = ''
     @dev.transport.command('show backup-config') do |extBackup|
@@ -208,12 +207,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end
     return fileOut
   end
-   
+
   def saveBackupConfig(tmpfile)
-    executeCommand('copy backup-config ' + tmpfile,"Are you sure you want to start")   
-    executeCommand('delete backup-config',"Delete backup-config (Y/N)") 
+    executeCommand('copy backup-config ' + tmpfile,"Are you sure you want to start")
+    executeCommand('delete backup-config',"Delete backup-config (Y/N)")
   end
-  
+
   def ping_switch()
     #Sleep for 2 mins to wait for switch to come up
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
@@ -229,12 +228,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
         sleep 60
       end
     end
-  end 
-  
+  end
+
   def pingable()
     output = `ping -c 4 #{@dev.transport.host}`
     Puppet.debug "ping output = #{output}"
     return (!output.include? "100% packet loss")
   end
-  
+
 end

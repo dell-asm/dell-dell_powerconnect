@@ -6,34 +6,33 @@ require 'puppet/provider/powerconnect_responses'
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
   mk_resource_methods
   $dev = Puppet::Util::NetworkDevice.current
-  
   def run(url, forceupdate, saveconfig)
-    
+
     if exists(url) == true && forceupdate == false
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_VERSION_EXISTS_INFO)
       return
     else
       update(url)
     end
-    
-    if saveconfig == true 
+
+    if saveconfig == true
       save_switch_config()
     end
-   
+
     status = reboot_switch()
-    
+
     if status == true
       ping_switch()
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_SUCCESSFUL_INFO)
     else
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_ERROR
     end
-    
+
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SUCCESSFUL_INFO)
     return status
 
   end
-  
+
   def exists(url)
     currentfirmwareversion = $dev.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
@@ -44,15 +43,14 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       return false
     end
   end
-  
-  
+
   def update(url)
     txt = ''
     image1version = ''
     image2version = ''
     bootimage = 'image2'
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
-    
+
     txt = download_image(url)
     item = txt.scan(Puppet::Provider::Powerconnect_responses::RESPONSE_IMAGE_DOWNLOAD_SUCCESSFUL)
     if item.empty?
@@ -76,13 +74,13 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     $dev.transport.command('boot system ' + bootimage) do |out|
       txt << out
     end
-    
+
   end
-  
+
   def download_image(url)
     yesflag = false
     txt = ''
-    
+
     Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_DOWNLOAD_DEBUG)
     $dev.transport.command('copy ' + url + ' image') do |out|
       out.each_line do |line|
@@ -100,11 +98,11 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     return txt
 
   end
-  
+
   def save_switch_config()
     yesflag = false
     txt = ''
-    
+
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SAVE_CONFIG_INFO)
     $dev.transport.command('copy running-config startup-config') do |out|
       out.each_line do |line|
@@ -115,11 +113,11 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       end
       txt << out
     end
-    
+
   end
 
   def reboot_switch()
-    
+
     $dev.transport.command('update bootcode') do |out|
       out.each_line do |line|
         if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT)
@@ -133,10 +131,10 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
         end
       end
     end
-    
+
     return false
   end
-  
+
   def ping_switch()
     #Sleep for 2 mins to wait for switch to come up
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
@@ -157,8 +155,8 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     $dev.connect_transport
     $dev.switch.transport=$dev.transport
     Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_RECONNECT_SWITCH_DEBUG)
-  end 
-  
+  end
+
   def pingable()
     output = `ping -c 4 #{$dev.transport.host}`
     return (!output.include? "100% packet loss")
