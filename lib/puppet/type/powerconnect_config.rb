@@ -24,8 +24,8 @@ Puppet::Type.newtype(:powerconnect_config) do
   
   newparam(:force) do
    desc "Override any existing configuration"
-   newvalues(:true, :false)
-   defaultto :false
+   newvalues(true, false)
+   defaultto false
   end
 
   newproperty(:returns, :event => :executed_command) do |property|

@@ -15,4 +15,7 @@ module Puppet::Provider::Powerconnect_messages
   POWERCONNECT_RETRY_PING_INFO="Switch is not up, will retry after 1 min."
   POWERCONNECT_PING_SUCCESS_DEBUG="Puppet::Provider::powerconnect_firmware:Ping Succeeded, trying to reconnect to switch."
   
+  
+  ###Configuration messages
+  CONFIG_CONFIGS_MATCH_NO_FORCE="Switch is having the same configuration as that of url configured, so configuration copy is skipped."
 end
