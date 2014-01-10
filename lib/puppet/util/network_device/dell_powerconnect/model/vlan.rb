@@ -7,7 +7,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/scoped_value'
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   attr_reader :params, :name
-
   def initialize(transport, facts, options)
     super(transport, facts)
     # Initialize some defaults
@@ -48,10 +47,10 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util
       transport.command("exit")
     when :absent
       transport.command("no vlan #{name}")
-     else
-        "default value"
+    else
+      "default value"
     end
-end
+  end
 
   def mod_path_base
     return 'puppet/util/network_device/dell_powerconnect/model/vlan'

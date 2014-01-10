@@ -4,7 +4,6 @@ require 'puppet/util/network_device/transport_powerconnect'
 
 class Puppet::Util::NetworkDevice::Transport_powerconnect::Base_powerconnect
   attr_accessor :user, :password, :host, :port, :default_prompt, :timeout, :cache
-
   def initialize
     @timeout = 10
     @cache = {}
@@ -16,7 +15,7 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Base_powerconnect
 
   def expect(prompt)
     Puppet.debug "Override Me: prompt = #{prompt}"
-  end 
+  end
 
   def command(cmd, options = {})
     noop = options[:noop].nil? ? Puppet[:noop] : options[:noop]

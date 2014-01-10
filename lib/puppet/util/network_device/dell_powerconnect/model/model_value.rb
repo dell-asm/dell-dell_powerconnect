@@ -3,7 +3,6 @@ require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
 
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ModelValue < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
-
   def model(*args, &block)
     return @model if args.empty? && block.nil?
     @model = (block.nil? ? args.first : block)

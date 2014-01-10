@@ -64,8 +64,8 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
     yesflag = false
     transport.command("end")
     transport.command("copy running-config startup-config") do |out|
-    Puppet.debug("Copy config started")
-	out.each_line do |line|
+      Puppet.debug("Copy config started")
+      out.each_line do |line|
         if line.start_with?("Are you sure you want to save") && yesflag == false
           if transport.class.name.include?('Ssh')
             transport.send("y")

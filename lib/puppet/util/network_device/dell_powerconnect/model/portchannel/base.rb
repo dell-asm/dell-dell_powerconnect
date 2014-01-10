@@ -24,13 +24,13 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Portchannel::Base
         transport.command("switchport trunk allowed vlan add #{value}")
       end
       remove { |*_| }
-    end    
+    end
     ifprop(base, :removevlans,"switchport trunk allowed vlan") do
       add do |transport, value|
         transport.command("switchport mode trunk")
         transport.command("switchport trunk allowed vlan remove #{value}")
       end
-      remove { |*_| }    
+      remove { |*_| }
     end
   end
 end

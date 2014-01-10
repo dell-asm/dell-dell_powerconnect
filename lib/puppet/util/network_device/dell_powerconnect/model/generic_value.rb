@@ -1,12 +1,11 @@
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/value_helper'
 
-#Value class which provides basic functions for managing 
+#Value class which provides basic functions for managing
 #parameter state change
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
   attr_accessor :name, :transport, :facts, :idx, :value, :evaluated
   extend Puppet::Util::NetworkDevice::ValueHelper
-
   def initialize(name, transport, facts, idx, &block)
     @name = name
     @transport = transport
@@ -25,7 +24,6 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
   def evaluate(&block)
     instance_eval(&block)
   end
-
 
   def parse(txt)
     if self.match.is_a?(Proc)

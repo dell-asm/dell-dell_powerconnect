@@ -10,7 +10,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/switch'
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::NetworkDevice::Base_powerconnect
 
   attr_accessor :enable_password, :switch
-
   def initialize(url, options = {})
     super(url)
     @enable_password = options[:enable_password] || parse_enable(@url.query)
@@ -43,10 +42,10 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
     raise "Can't issue \"enable\" to enter privileged, no enable password set" unless enable_password
     transport.command("enable", {:noop => false}) do |out|
       out.each_line do |line|
-       if line.start_with?("Password:")
-         transport.send(enable_password+"\r")
-	 return
-       end
+        if line.start_with?("Password:")
+          transport.send(enable_password+"\r")
+          return
+        end
       end
     end
   end

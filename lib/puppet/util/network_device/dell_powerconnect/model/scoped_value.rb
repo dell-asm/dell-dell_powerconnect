@@ -5,7 +5,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
 #base on the scope of command output
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::ScopedValue < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::GenericValue
   attr_accessor :scope, :scope_name
-
   def scope(*args, &block)
     return @scope if args.empty? && block.nil?
     @scope = (block.nil? ? args.first : block)

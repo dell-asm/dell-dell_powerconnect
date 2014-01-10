@@ -5,7 +5,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/interface'
 require 'puppet/util/network_device/dell_powerconnect/model/portchannel'
 
 module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch::Base
-
   def self.register(base)
 
     base.register_model(:vlan, Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan, /^(\d+)\s\S+/, 'show vlan')

@@ -3,10 +3,8 @@ require 'puppet/util/network_device'
 require 'puppet/util/network_device/transport_powerconnect'
 require 'puppet/util/network_device/transport_powerconnect/base_powerconnect'
 
-
 class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::NetworkDevice::Transport_powerconnect::Base_powerconnect
   attr_accessor :buf, :ssh, :channel
-
   def initialize
     super
     unless Puppet.features.ssh?
@@ -93,7 +91,7 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::N
     #Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
     @channel.send_data(line + "\n") unless noop
   end
-  
+
   def sendwithoutnewline(line, noop = false)
     #Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
     @channel.send_data(line) unless noop

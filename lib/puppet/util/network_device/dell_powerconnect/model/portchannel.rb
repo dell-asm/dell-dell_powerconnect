@@ -7,7 +7,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/scoped_value'
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Portchannel < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   attr_reader :params, :name
-
   def initialize(transport, facts, options)
     super(transport, facts)
     # Initialize some defaults

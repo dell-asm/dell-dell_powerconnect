@@ -11,7 +11,6 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Facts
   include Puppet::Util::NetworkDevice::Dsl_powerconnect
 
   attr_reader :transport
-
   def initialize(transport)
     @transport = transport
   end

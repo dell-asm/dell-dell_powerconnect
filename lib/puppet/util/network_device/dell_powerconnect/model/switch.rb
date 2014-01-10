@@ -8,7 +8,6 @@ require 'puppet/util/network_device/dell_powerconnect/model/generic_value'
 class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch < Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
 
   attr_reader :params, :vlans
-
   def initialize(transport, facts)
     super
     # Initialize some defaults
@@ -44,7 +43,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Switch < Puppet::Ut
     return int
   end
 
-  [ 
+  [
     :vlan,
     :portchannel,
     :interface,
