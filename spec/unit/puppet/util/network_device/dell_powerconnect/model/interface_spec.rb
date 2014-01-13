@@ -59,6 +59,7 @@ END
     it 'should add the vlans to an interface' do
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/2')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/2", anything)
       @transport.should_receive(:command).with('exit')
@@ -71,6 +72,7 @@ END
     it 'should update the description' do
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/2')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/2", anything)
       @transport.should_receive(:command).with('exit')
@@ -83,6 +85,7 @@ END
     it 'should remove the vlans from an interface' do
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/2')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/2", anything)
       @transport.should_receive(:command).with('exit')
@@ -95,6 +98,7 @@ END
     it 'should add an interface to a port channel' do
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/2')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/2", anything)
       @transport.should_receive(:command).with('exit')
@@ -107,6 +111,7 @@ END
     it 'should remove an interface from a port channel' do
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/2')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/2", anything)
       @transport.should_receive(:command).with('exit')
@@ -120,6 +125,7 @@ END
       @interface = Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface.new(@transport, {}, { :name => 'GigabitEthernet1/0/4' })
       @transport.should_receive(:command).with('conf t',  :prompt => /\(config\)#\s?\z/n).once
       @transport.should_receive(:command).with('end')
+      @transport.should_receive(:command).with("copy running-config startup-config").and_yield("Configuration Saved!")
       @transport.should_receive(:command).with('interface GigabitEthernet1/0/4')
       @transport.should_receive(:command).with("interface GigabitEthernet1/0/4", anything)
       @transport.should_receive(:command).with('exit')
