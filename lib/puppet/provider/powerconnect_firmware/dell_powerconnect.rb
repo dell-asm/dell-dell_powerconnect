@@ -4,24 +4,32 @@ require 'puppet/provider/powerconnect_messages'
 require 'puppet/provider/powerconnect_responses'
 
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
+  
+  @doc = "Updates the PowerConnect switch firmware"
+  
   mk_resource_methods
   $dev = Puppet::Util::NetworkDevice.current
   def run(url, forceupdate, saveconfig)
 
+    #Check if firmware by the same version already exists on switch
     if exists(url) == true && forceupdate == false
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_VERSION_EXISTS_INFO)
       return
     else
+      #Update switch firmware
       update(url)
     end
 
     if saveconfig == true
+      #Save any unsaved switch configuration changes before rebooting
       save_switch_config()
     end
 
+    #Reboot so that switch boots with new firmware image
     status = reboot_switch()
 
     if status == true
+      #Check if switch is back
       ping_switch()
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_SUCCESSFUL_INFO)
     else
@@ -64,6 +72,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       end
     end
 
+    #Identify whether image has been downloaded to image1 or image2
     if image1version.eql?(newfirmwareversion)
       bootimage = "image1"
     else
