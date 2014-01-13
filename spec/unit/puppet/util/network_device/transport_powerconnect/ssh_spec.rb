@@ -1,6 +1,5 @@
 #! /usr/bin/env ruby
 require 'spec_helper'
-
 require 'puppet/util/network_device/transport_powerconnect/ssh'
 
 describe Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh, :if => Puppet.features.ssh? do
@@ -17,18 +16,18 @@ describe Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh, :if => Puppet
     @fixture.should be_handles_login
   end
 
-#  it "should connect to the given host and port" do
-#    Net::SSH.should_receive(:start).with(|host, user, args| user == "user" && args[:password] == "pass" ).and_return("")
-#    @fixture.connect
-#  end
-#
-#  it "should connect using the given username and password" do
-#    Net::SSH.expects(:start).with { |host, user, args| user == "user" && args[:password] == "pass" }.returns stub_everything
-#    @fixture.user = "user"
-#    @fixture.password = "pass"
-#
-#    @fixture.connect
-#  end
+  #  it "should connect to the given host and port" do
+  #    Net::SSH.should_receive(:start).with(|host, user, args| user == "user" && args[:password] == "pass" ).and_return("")
+  #    @fixture.connect
+  #  end
+  #
+  #  it "should connect using the given username and password" do
+  #    Net::SSH.expects(:start).with { |host, user, args| user == "user" && args[:password] == "pass" }.returns stub_everything
+  #    @fixture.user = "user"
+  #    @fixture.password = "pass"
+  #
+  #    @fixture.connect
+  #  end
 
   it "should raise a Puppet::Error when encountering an authentication failure" do
     Net::SSH.should_receive(:start).and_raise(Net::SSH::AuthenticationFailed)
@@ -105,16 +104,16 @@ describe Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh, :if => Puppet
       @fixture.buf.should == "data"
     end
 
-#    it "should mark eof on close" do
-#      @ssh.should_receive(:open_channel).and_yield(@channel)
-#      @channel.should_receive(:request_pty).and_return("")
-#      @channel.should_receive(:send_channel_request).with("shell").and_yield(@channel, true)
-#      @channel.should_receive(:on_data)
-#      @channel.should_receive(:on_extended_data)
-#      @channel.should_receive(:on_close).and_return(@channel)   
-#      @fixture.connect
-#      @fixture.should be_eof
-#    end
+    #    it "should mark eof on close" do
+    #      @ssh.should_receive(:open_channel).and_yield(@channel)
+    #      @channel.should_receive(:request_pty).and_return("")
+    #      @channel.should_receive(:send_channel_request).with("shell").and_yield(@channel, true)
+    #      @channel.should_receive(:on_data)
+    #      @channel.should_receive(:on_extended_data)
+    #      @channel.should_receive(:on_close).and_return(@channel)
+    #      @fixture.connect
+    #      @fixture.should be_eof
+    #    end
 
     it "should expect output to conform to the default prompt" do
       @ssh.should_receive(:open_channel).and_yield(@channel)
@@ -236,7 +235,6 @@ describe Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh, :if => Puppet
       @fixture.stub(:process_ssh)
       @fixture.expect(/output/).should == "output"
     end
-
 
     describe "when processing the ssh loop" do
       it "should advance one tick in the ssh event loop and exit on eof" do
