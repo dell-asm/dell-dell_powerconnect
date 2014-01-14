@@ -32,7 +32,7 @@ VLAN   Name                             Ports          Type
                                         Gi1/0/22
 
 END
-  end
+    end
 
     it 'should initialize various base params' do
       @vlan.params.should_not == be_empty
