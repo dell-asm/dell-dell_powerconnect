@@ -20,7 +20,7 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan::Base
     end
 
     base.register_scoped :vlan_name, vlan_scope do
-      match /^\d+\s(\S+)/
+      match /^\d+\s+(\S+)/
       cmd 'show vlan'
       add do |transport, value|
         transport.command("name \"#{value}\"")
