@@ -21,6 +21,22 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
     configureinterface(base, :description)
     configureinterface(base, :mtu, "mtu")
     configureinterface(base, :mode, "switchport mode")
+    configureinterface(base, :add_vlan_access_mode) do
+      match /switchport access vlan/
+      add do |transport, value|
+        transport.command("switchport access vlan  #{value}")
+      end
+      remove { |*_| }
+    end
+    configureinterface(base, :remove_vlan_access_mode) do
+      match /switchport access vlan/
+      add do |transport, value|
+        if value == :true
+          transport.command("no switchport access vlan")
+        end
+      end
+      remove { |*_| }
+    end
     configureinterface(base, :add_vlans_general_mode) do
       match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
       after :mode

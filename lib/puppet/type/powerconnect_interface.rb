@@ -24,6 +24,23 @@ Puppet::Type.newtype(:powerconnect_interface) do
     newvalues(:access, :general, :trunk)
   end
 
+  newproperty(:add_vlan_access_mode) do
+      desc "Configures the VLAN ID when the interface is in access mode."
+      defaultto(:absent)
+      newvalues(:absent, /^\d+$/)
+      validate do |value|
+        return if value == :absent
+        return unless value.to_s.match(/^\d+$/)
+        raise ArgumentError, "An invalid vlan value is entered. The 'Vlan' vlaue must be between 1 and 4093." unless value.to_i >= 1 && value.to_i <= 4093
+      end
+    end
+  
+    newproperty(:remove_vlan_access_mode) do
+      desc "Remove the VLAN configured in access mode."
+      defaultto(false)
+      newvalues(false,true)
+    end
+    
   newproperty(:add_vlans_general_mode) do
     desc "VLANs to add to a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of VLAN IDs."
     validate do |value|
