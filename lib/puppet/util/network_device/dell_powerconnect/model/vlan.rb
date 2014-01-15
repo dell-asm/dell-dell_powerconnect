@@ -17,6 +17,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util
     register_modules
   end
 
+  #This method is called to add/remove vlan and then save running config to startup config.
   def update(is = {}, should = {})
     return unless configuration_changed?(is, should, :keep_ensure => true)
     missing_commands = [is.keys, should.keys].flatten.uniq.sort - @params.keys.flatten.uniq.sort
@@ -33,6 +34,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Vlan < Puppet::Util
     after_update
   end
 
+  #Called in update method and it adds vlan if ensure parameter is present else removes vlan.
   def perform_update(is, should)
     case @params[:ensure].value
     when :present

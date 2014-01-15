@@ -59,6 +59,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Base
     transport.command("conf t", :prompt => /\(config\)#\s?\z/n)
   end
 
+  # Copy running config to startupconfig so that the current changes are reflected on switch startup after reboot.
   def after_update
     txt = ''
     yesflag = false
