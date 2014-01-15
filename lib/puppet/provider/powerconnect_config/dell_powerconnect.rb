@@ -179,15 +179,13 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
         end
         if line.start_with?("Are you sure you want to reload the stack")
           if doubleflag == false
-            break
+            @dev.transport.command('y') do |out|
+              break
+            end
           end
           return
         end
       end
-      break
-    end
-    @dev.transport.command('y') do |out|
-      break
     end
   end
 
