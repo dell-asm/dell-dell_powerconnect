@@ -1,6 +1,5 @@
 #! /usr/bin/env ruby
 require 'spec_helper'
-require 'ap'
 require 'puppet/util/network_device'
 require 'puppet/util/network_device/dell_powerconnect/model/vlan'
 
