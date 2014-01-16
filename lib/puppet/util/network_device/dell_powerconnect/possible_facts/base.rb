@@ -11,6 +11,13 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       cmd 'show system'
     end
 
+    base.register_param 'systemdescription' do
+      match do |txt|
+        txt.scan(/^System\s+Description:\s+(.+)$/).flatten.first
+      end
+      cmd 'show system'
+    end
+
     base.register_param 'bootimage' do
       res = ''
       match do |txt|
