@@ -4,7 +4,6 @@ require 'spec_helper'
 require 'yaml'
 require 'puppet/util/network_device/dell_powerconnect/device'
 require 'puppet/provider/powerconnect_portchannel/dell_powerconnect'
-require 'pp'
 require 'spec_lib/puppet_spec/deviceconf'
 include PuppetSpec::Deviceconf
 
