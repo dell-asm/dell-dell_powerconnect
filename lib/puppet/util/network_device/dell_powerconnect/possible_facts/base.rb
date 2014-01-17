@@ -122,14 +122,8 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
     end
 
     base.register_param 'managementip' do
-      ip = ''
       match do |txt|
-        txt.scan(/^(\S+)\s+(\S+)\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)$/) do |arr|
-          if arr[1].to_s.eql?('Up') && arr[2] != '0.0.0.0'
-            ip = arr[2]
-          end
-        end
-        ip
+        @transport.host
       end
       cmd 'show ip interface'
     end

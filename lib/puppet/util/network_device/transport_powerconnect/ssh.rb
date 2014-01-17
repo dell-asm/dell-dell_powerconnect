@@ -81,19 +81,19 @@ class Puppet::Util::NetworkDevice::Transport_powerconnect::Ssh < Puppet::Util::N
       end
     end
     line.split(/\n/).each do |item|
-      Puppet.debug "SSH_IOS received: #{item}" if Puppet[:debug]
+      Puppet.debug "SSH data received: #{item}" if Puppet[:debug]
       raise Puppet::Error, "Executed invalid Command! For a detailed output add --debug to the next Puppet run!" if line.match(/^% Invalid input detected at '\^' marker\.$/n)
     end
     line
   end
 
   def send(line, noop = false)
-    #Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
+    #Puppet.debug "SSH data sent: #{line}" if Puppet[:debug]
     @channel.send_data(line + "\n") unless noop
   end
 
   def sendwithoutnewline(line, noop = false)
-    #Puppet.debug "SSH_IOS send: #{line}" if Puppet[:debug]
+    #Puppet.debug "SSH data sent: #{line}" if Puppet[:debug]
     @channel.send_data(line) unless noop
   end
 
