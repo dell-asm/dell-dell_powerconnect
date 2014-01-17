@@ -7,6 +7,7 @@ require 'rspec/mocks'
 require 'puppet/provider/dell_powerconnect'
 require 'puppet/provider/powerconnect_responses'
 require 'puppet/provider/powerconnect_messages'
+require 'spec_lib/puppet_spec/deviceconf'
 
 module_path = File.expand_path(File.join(File.dirname(__FILE__), '..'))
 $LOAD_PATH.unshift File.expand_path(File.join(File.dirname(__FILE__), '..','lib'))
