@@ -10,11 +10,19 @@ require 'puppet/provider/powerconnect_messages'
 
 $CALLER_MODULE = "dell_powerconnect"
 
-Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider do
+Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider::Dell_powerconnect do
 
   @doc = "Updates the running-config and startup-config of PowerConnect switch"
 
   mk_resource_methods
+  
+  def initialize(device, *args)
+    super
+  end
+  
+  def self.lookup(device, name)
+  end
+    
   def run(url, config_type, force)
     #begin
     digestlocalfile=''
@@ -25,30 +33,34 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     yesflag = false
     txt = ''
 
-    @dev = Puppet::Util::NetworkDevice.current
-
     ##first check whether there is any backup-config, if so store it to flash and restore it at the end
     backedupPrevConfig = preUpdateBackupConfigSave(url, flashtmpfile)
 
+	##calculating the md5 hash of the config to be pushed on to the switch
     digestlocalfile = getBackupConfigMD5
+	##calculating the md5 hash of the config present on the switch
     digestserverconfig = getSwitchConfigMD5(config_type)
     Puppet.debug "digest1 = #{digestlocalfile} && digest2 = #{digestserverconfig}"
 
+	##applying the config only if the md5 mismatches or force option is true
     if digestlocalfile != digestserverconfig || force == :true
       applyConfig(url, config_type)
     end
 
-    Puppet.debug "force is #{force}"
-
+	##info messages about config not applied as both the files match and force option not used
     if digestlocalfile.eql?(digestserverconfig) && force == :false
       Puppet.info(Puppet::Provider::Powerconnect_messages::CONFIG_CONFIGS_MATCH_NO_FORCE)
     end
 
+	##removing the temporary backup config which was created by copying the config from the manifest
     cleanupBackupConfig
+	
+	##restoring the old backupconfig if it was earlier present
     if backedupPrevConfig == true
       restoreOldBackupConfig(flashtmpfile)
     end
-
+	
+	##reloading the switch and initializing the switch
     if config_type == 'startup' && (digestlocalfile != digestserverconfig || force == :true)
       startupconfigPostUpdate
     end
@@ -68,7 +80,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     backedupPrevConfig = false
     extBackupConfigfile = ''
 
-    @dev.transport.command('show backup-config') do |extBackup|
+    device.transport.command('show backup-config') do |extBackup|
       extBackupConfigfile<< extBackup
     end
     if extBackupConfigfile.include? "Configuration script 'backup-config' not found"
@@ -125,15 +137,15 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
 
   def executeCommand(cmd, str)
     yesflag = false
-    @dev.transport.command(cmd) do |out|
+    device.transport.command(cmd) do |out|
       out.each_line do |line|
         if line.include?(str) && yesflag == false
-          if @dev.transport.class.name.include?('Ssh')
+          if device.transport.class.name.include?('Ssh')
             command = "y"
           else
             command = "y\r"
           end
-          @dev.transport.send(command)
+          device.transport.send(command)
           yesflag = true
         end
       end
@@ -142,8 +154,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
 
   def getfileMD5(configtype, slice)
     filecontent = ''
-    @dev.transport.command('show '+configtype) do |out|
-      Puppet.debug "I am here4"
+    device.transport.command('show '+configtype) do |out|
       filecontent<< out
       Puppet.debug "out = #{out}"
     end
@@ -153,13 +164,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       return digestlocalfile
     end
 
-    if @dev.transport.class.name.include? 'Telnet'
+    if device.transport.class.name.include? 'Telnet'
       filecontent.slice!(slice)
     else
-      if @dev.transport.class.name.include? 'Ssh'
+      if device.transport.class.name.include? 'Ssh'
         index = filecontent.rindex("!Current Configuration")
         filecontent = filecontent[index..-1]
-        Puppet.debug "I am here5"
       else
       end
     end
@@ -170,16 +180,16 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   def reloadswitch()
     yesflag = false
     doubleflag = false
-    @dev.transport.command('reload') do |out|
+    device.transport.command('reload') do |out|
       out.each_line do |line|
         if line.start_with?("Are you sure you want to continue") && yesflag == false
-          @dev.transport.sendwithoutnewline("yy")
+          device.transport.sendwithoutnewline("yy")
           yesflag = true
           doubleflag = true
         end
         if line.start_with?("Are you sure you want to reload the stack")
           if doubleflag == false
-            @dev.transport.command('y') do |out|
+            device.transport.command('y') do |out|
               break
             end
           end
@@ -190,17 +200,17 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   end
 
   def initializeswitch
-    @dev = Puppet::Util::NetworkDevice.current
+    #device = Puppet::Util::NetworkDevice.current
     #Reesatblish transport session
     Puppet.info("Trying to reconnect to switch...")
-    @dev.connect_transport
-    @dev.switch.transport=@dev.transport
+    device.connect_transport
+    device.switch.transport=device.transport
     Puppet.info("Session established...")
   end
 
   def getBackupConfig
     fileOut = ''
-    @dev.transport.command('show backup-config') do |extBackup|
+    device.transport.command('show backup-config') do |extBackup|
       fileOut<< extBackup
     end
     return fileOut
@@ -229,7 +239,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   end
 
   def pingable()
-    output = `ping -c 4 #{@dev.transport.host}`
+    output = `ping -c 4 #{device.transport.host}`
     Puppet.debug "ping output = #{output}"
     return (!output.include? "100% packet loss")
   end
