@@ -37,6 +37,17 @@ describe "Integration test for Dell PowerConnect switch Vlan" do
   end
 
   context "when create,rename and delete vlan without any error" do
+    
+    it "should lookup a present powerconnect vlan" do
+      result = provider_class.lookup(@device, '1')
+      result[:ensure]==:present
+    end
+        
+    it "should lookup a absent powerconnect vlan" do
+      result = provider_class.lookup(@device, create_vlan[:name])
+      result[:ensure]==:absent
+    end
+        
     it "should create a powerconnect vlan" do
       former_properties = provider_class.lookup(@device, create_vlan[:name])
       properties = {:vlan_name => create_vlan[:vlan_name],:ensure => create_vlan[:ensure]}
