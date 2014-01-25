@@ -1,0 +1,5 @@
+SwitchConfig1:
+  name: 'Config1'
+  url: 'tftp://172.152.0.85/s252.scr'
+  force: 'true'
+  config_type: 'startup'
