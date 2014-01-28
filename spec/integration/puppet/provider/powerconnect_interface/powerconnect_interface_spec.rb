@@ -4,8 +4,8 @@ require 'puppet/util/network_device/dell_powerconnect/device'
 require 'puppet/provider/powerconnect_interface/dell_powerconnect'
 require 'pp'
 require 'spec_lib/puppet_spec/deviceconf'
-include PuppetSpec::Deviceconf
 
+include PuppetSpec::Deviceconf
 
 describe "Integration tests to configure Dell Powerconnect Switch Interface" do
 
@@ -17,7 +17,7 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
     :name  => 'Gi1/0/21',
     :description       => 'ServerPort21',
     :mtu => 9216,
-    :mode  => 'trunk',
+    :mode  => 'trunk'
     )
   end
 
@@ -29,7 +29,7 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
     :mtu => 9216,
     :add_vlans_trunk_mode => '33',
     :remove_vlans_general_mode => '32,33',
-    :remove_interface_from_portchannel => true,
+    :remove_interface_from_portchannel => true
     )
   end
 
@@ -38,7 +38,7 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
     :name  => 'Gi1/0/21',
     :mode => 'trunk',
     :description          => 'ServerPort21',
-    :add_interface_to_portchannel => '5',
+    :add_interface_to_portchannel => '5'
     )
   end
 
@@ -49,7 +49,7 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
   context "when managing interfaces" do
     it "configure interface params should work with out any error" do
       existing_params = provider_class.lookup(@device, configure_description_mode[:name])
-      new_params = {:description => configure_description_mode[:description], :mtu => configure_description_mode[:mtu], :mode => configure_description_mode[:mode]}
+      new_params = get_new_properties(configure_description_mode)
       @device.switch.interface(configure_description_mode[:name]).update( existing_params , new_params)
       result = provider_class.lookup(@device, configure_description_mode[:name])
       result.should include({:description => configure_description_mode[:description]})
@@ -57,7 +57,7 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
     end
     it "configure vlans with out any error" do
       existing_params = provider_class.lookup(@device, configure_vlans[:name])
-      new_params = {:description => configure_vlans[:description], :mtu => configure_vlans[:mtu], :mode => configure_vlans[:mode],:add_vlans_trunk_mode  => configure_vlans[:add_vlans_trunk_mode ], :remove_vlans_general_mode => configure_vlans[:remove_vlans_general_mode]}
+      new_params = get_new_properties(configure_vlans)
       @device.switch.interface(configure_vlans[:name]).update( existing_params , new_params)
       result = provider_class.lookup(@device, configure_vlans[:name])
       result.should include({:mode =>  configure_vlans[:mode]})
@@ -65,10 +65,21 @@ describe "Integration tests to configure Dell Powerconnect Switch Interface" do
     end
     it "configure portchannels with out any error" do
       existing_params = provider_class.lookup(@device, configure_portchannel[:name])
-      new_params = {:description => configure_portchannel[:description], :mtu => configure_portchannel[:mtu], :mode => configure_portchannel[:mode],:add_interface_to_portchannel=> configure_portchannel[:add_interface_to_portchannel]}
+      new_params =  get_new_properties(configure_portchannel)
       @device.switch.interface(configure_portchannel[:name]).update( existing_params , new_params)
       result = provider_class.lookup(@device, configure_portchannel[:name])
       result.should include({:add_interface_to_portchannel =>  configure_portchannel[:add_interface_to_portchannel]})
     end
   end
+
+  def get_new_properties(powerconnect_interface_obj)
+    if powerconnect_interface_obj.eql?(configure_description_mode)
+      return {:description => powerconnect_interface_obj[:description], :mtu => powerconnect_interface_obj[:mtu], :mode => powerconnect_interface_obj[:mode]}
+    else if powerconnect_interface_obj.eql?(configure_vlans)
+        return {:description => powerconnect_interface_obj[:description], :mtu => powerconnect_interface_obj[:mtu], :mode => powerconnect_interface_obj[:mode],:add_vlans_trunk_mode  => powerconnect_interface_obj[:add_vlans_trunk_mode ], :remove_vlans_general_mode => powerconnect_interface_obj[:remove_vlans_general_mode]}
+    else
+        return {:description => powerconnect_interface_obj[:description], :mtu => powerconnect_interface_obj[:mtu], :mode => powerconnect_interface_obj[:mode],:add_interface_to_portchannel=> powerconnect_interface_obj[:add_interface_to_portchannel]}
+    end
+  end
+end
 end

@@ -50,6 +50,15 @@ Puppet::Type.newtype(:powerconnect_interface) do
     end
   end
 
+   newproperty(:untag_vlans_general_mode) do
+    desc "Untagged VLANs to add to a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of VLAN IDs."
+    validate do |value|
+      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
+        raise ArgumentError, "%s is not a valid input for untag_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      end
+    end
+  end
+
   newproperty(:remove_vlans_general_mode) do
     desc "VLANs to remove from a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
