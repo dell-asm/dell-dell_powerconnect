@@ -52,6 +52,21 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::Model::Interface::Base
       end
       remove { |*_| }
     end
+    configureinterface(base, :untag_vlans_general_mode) do
+      match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
+      after :mode
+      add do |transport, value|
+        transport.command("switchport general allowed vlan add #{value}") do |out|
+          out.each_line do |line|
+            if line.match(/ERROR:/)
+              Puppet.warning "#{line}"
+              #raise "#{line}"
+            end
+          end
+        end
+      end
+      remove { |*_| }
+    end
     configureinterface(base, :remove_vlans_general_mode) do
       match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
 
