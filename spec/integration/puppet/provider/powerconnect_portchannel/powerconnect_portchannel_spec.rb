@@ -27,10 +27,11 @@ describe "Integration test for powerconnect portchannel" do
 
   context 'when configuring portchannel' do 
     it "should configure portchannel" do 
+      expectedResult = {:allowvlans => config_portchannel[:allowvlans], :removevlans => config_portchannel[:removevlans]}
       preresult = provider_class.lookup(@device, config_portchannel[:name])
       @device.switch.portchannel(config_portchannel[:name]).update(preresult,{:allowvlans => config_portchannel[:allowvlans], :removevlans => config_portchannel[:removevlans]})
       postresult = provider_class.lookup(@device, config_portchannel[:name])
-      postresult.should eq({:allowvlans => config_portchannel[:allowvlans], :removevlans => config_portchannel[:removevlans]})
+      postresult.should eq(expectedResult)
     end
   end
 
