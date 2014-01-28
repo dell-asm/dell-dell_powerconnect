@@ -111,14 +111,10 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
     end
 
     base.register_param 'macaddress' do
-      res = ''
       match do |txt|
-        txt.scan(/^(Burned In|L3) MAC Address[.]+\s+(\S+)/) do |arr|
-          res = arr[1]
-        end
-        res
+        txt.scan(/^Burned\s+In\s+MAC\s+Address:\s+(.+)$/).flatten.first
       end
-      cmd 'show ip interface'
+      cmd 'show system'
     end
 
     base.register_param 'managementip' do
