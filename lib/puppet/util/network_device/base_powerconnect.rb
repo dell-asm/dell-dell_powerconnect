@@ -3,6 +3,8 @@ require 'openssl'
 require 'cgi'
 require 'puppet/util/network_device/transport_powerconnect'
 require 'puppet/util/network_device/transport_powerconnect/base_powerconnect'
+require '/etc/puppetlabs/puppet/modules/asm_lib/lib/security/encode'
+
 
 # Base class which provides transport initialization
 # based on the information provided in device.conf file
@@ -28,7 +30,7 @@ class Puppet::Util::NetworkDevice::Base_powerconnect
         @transport.password = decrypt(master, [@url.password].pack('h*'))
       else
         @transport.user = URI.decode(@url.user)
-        @transport.password = URI.decode(@url.password)
+        @transport.password = URI.decode(asm_decrypt(@url.password))
       end
     end
   end

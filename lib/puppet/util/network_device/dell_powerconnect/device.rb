@@ -4,6 +4,8 @@ require 'puppet/util/network_device/base_powerconnect'
 require 'puppet/util/network_device/dell_powerconnect/facts'
 require 'puppet/util/network_device/dell_powerconnect/model'
 require 'puppet/util/network_device/dell_powerconnect/model/switch'
+require '/etc/puppetlabs/puppet/modules/asm_lib/lib/security/encode'
+
 
 # Models the Dell PowerConnect switch resource. Initializes
 # the switch connectivity and loads the facts related to it.
@@ -35,7 +37,8 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
     else
       transport.expect(/^Password:/)
     end
-    transport.command(@url.password, :noop => false)
+	password = URI.decode(asm_decrypt(@url.password))
+    transport.command(password, :noop => false)
   end
 
   def enable
