@@ -276,16 +276,13 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
       res = Hash.new
       remotedevices = Hash.new
       match do |txt|
-        txt.scan(/^(Gi[0-9\/]+|Te[0-9\/]+)\s+(\d+)\s+([0-9A-Z:]+)\s+(\S+)/) do |arr|
-          rdevice = Hash.new
-          rdevice["location"] = arr[3]
-          rdevice["mac_address"] = arr[2]
-          remotedevices[arr[0]] = rdevice
+        txt.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
+          remotedevices[arr[0]] = arr[2]
         end
         res["remotedeviceinfo"] = remotedevices.to_json
         res
       end
-      cmd 'show lldp remote-device all'
+      cmd 'show mac address-table'
     end
 
     base.register_param 'Active_Software_Version' do
