@@ -13,7 +13,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     get_device()
 
     #Check if firmware by the same version already exists on switch
-    if exists(url) == true && forceupdate == false
+    if exists(url) == true && forceupdate == :false
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_VERSION_EXISTS_INFO)
       return
     else
@@ -21,7 +21,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       update(url)
     end
 
-    if saveconfig == true
+    if saveconfig == :true
       #Save any unsaved switch configuration changes before rebooting
       save_switch_config()
     end
@@ -37,9 +37,12 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_ERROR
     end
 
-    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SUCCESSFUL_INFO)
-    return status
-
+    if exists(url)
+      Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SUCCESSFUL_INFO)
+      return status
+    else
+      raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_UNSUCCESSFUL_INFO
+    end
   end
 
   def exists(url)
@@ -55,9 +58,6 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
   def update(url)
     txt = ''
-    image1version = ''
-    image2version = ''
-    bootimage = 'image2'
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
 
     txt = download_image(url)
@@ -66,22 +66,8 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_IMAGE_DOWNLOAD_ERROR
     end
 
-    @transport.command('show version') do |out|
-      out.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
-        image1version = arr[0]
-        image2version = arr[1]
-      end
-    end
-
-    #Identify whether image has been downloaded to image1 or image2
-    if image1version.eql?(newfirmwareversion)
-      bootimage = "image1"
-    else
-      bootimage = "image2"
-    end
-
-    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SET_BOOTIMAGE_DEBUG%[bootimage])
-    @transport.command('boot system ' + bootimage) do |out|
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SET_BOOTIMAGE_DEBUG%['backup'])
+    @transport.command('boot system backup') do |out|
       txt << out
     end
 
@@ -92,7 +78,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     txt = ''
 
     Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_DOWNLOAD_DEBUG)
-    @transport.command('copy ' + url + ' image') do |out|
+    @transport.command('copy ' + url + ' backup') do |out|
       out.each_line do |line|
         if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_START_IMAGE_DOWNLOAD) && yesflag == false
           if @transport.class.name.include?('Ssh')
@@ -113,36 +99,35 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     yesflag = false
     txt = ''
 
-    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SAVE_CONFIG_INFO)
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SAVE_CONFIG_INFO)
     @transport.command('copy running-config startup-config') do |out|
       out.each_line do |line|
         if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE)&& yesflag == false
+          @transport.sendwithoutnewline("y")
+          yesflag = true
+          return true
+        end
+      end
+      txt << out
+    end
+    raise Puppet::Error, "Error reloading server: #{txt}"
+  end
+
+  def reboot_switch()
+    yesflag = false
+    txt = ''
+
+    Puppet.info("Rebooting the switch")
+    @transport.command('reload') do |out|
+      out.each_line do |line|
+        if line.include?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT_VERIFY_REBOOT) && yesflag == false
           @transport.sendwithoutnewline("y")
           yesflag = true
         end
       end
       txt << out
     end
-
-  end
-
-  def reboot_switch()
-
-    @transport.command('update bootcode') do |out|
-      out.each_line do |line|
-        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT)
-          @transport.sendwithoutnewline("y")
-        end
-        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE_BEFORE_REBOOT)
-          @transport.sendwithoutnewline("y")
-        end
-        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT_SUCCESSFUL)
-          return true
-        end
-      end
-    end
-
-    return false
+    true
   end
 
   def ping_switch()
