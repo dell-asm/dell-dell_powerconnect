@@ -15,14 +15,14 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   @doc = "Updates the running-config and startup-config of PowerConnect switch"
 
   mk_resource_methods
-  
+
   def initialize(device, *args)
     super
   end
-  
+
   def self.lookup(device, name)
   end
-    
+
   def run(url, config_type, force)
     #begin
     digestlocalfile=''
@@ -54,12 +54,12 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
 
 	##removing the temporary backup config which was created by copying the config from the manifest
     cleanupBackupConfig
-	
+
 	##restoring the old backupconfig if it was earlier present
     if backedupPrevConfig == true
       restoreOldBackupConfig(flashtmpfile)
     end
-	
+
 	##reloading the switch and initializing the switch
     if config_type == 'startup' && (digestlocalfile != digestserverconfig || force == :true)
       startupconfigPostUpdate
@@ -224,7 +224,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
   def ping_switch()
     #Sleep for 2 mins to wait for switch to come up
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
-    sleep 120
+    sleep 270 
 
     Puppet.info(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SWITCH_INFO)
     for i in 0..20
