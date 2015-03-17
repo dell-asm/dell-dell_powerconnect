@@ -36,8 +36,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     else
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_ERROR
     end
-
-    if exists(url)
+    if check_active_version(url)
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SUCCESSFUL_INFO)
       return status
     else
@@ -56,13 +55,33 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     end
   end
 
+  def check_active_version(url)
+    txt = ''
+    current_firmware = ''
+    new_firmware = url.split("\/").last.split("v").last.split(".stk").first
+    @transport.command('show version 1 | section active') do |out|
+      txt << out
+    end
+    txt.each_line do |line|
+      if line.start_with? '1'
+        current_firmware = line.split(' ')[1]
+      end
+    end
+    if current_firmware.to_s.strip.eql?(new_firmware.to_s.strip)
+      true
+    else
+      false
+    end
+  end
+
   def update(url)
     txt = ''
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
 
     txt = download_image(url)
-    item = txt.scan(Puppet::Provider::Powerconnect_responses::RESPONSE_IMAGE_DOWNLOAD_SUCCESSFUL)
-    if item.empty?
+    if txt.include? Puppet::Provider::Powerconnect_responses::RESPONSE_IMAGE_DOWNLOAD_SUCCESSFUL
+    elsif txt.include? Puppet::Provider::Powerconnect_responses::RESPONSE_IMAGE_DOWNLOAD_SUCCESS2
+    else
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_IMAGE_DOWNLOAD_ERROR
     end
 
@@ -77,7 +96,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     yesflag = false
     txt = ''
 
-    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_DOWNLOAD_DEBUG)
+    Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_DOWNLOAD_DEBUG)
     @transport.command('copy ' + url + ' backup') do |out|
       out.each_line do |line|
         if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_START_IMAGE_DOWNLOAD) && yesflag == false
