@@ -13,6 +13,7 @@ class Puppet::Util::NetworkDevice::Base_powerconnect
   attr_accessor :url, :transport, :crypt
   def initialize(url)
     @url = URI.parse(url)
+    @query = Hash.new([])
     @query = CGI.parse(@url.query) if @url.query
 
     require "puppet/util/network_device/transport_powerconnect/#{@url.scheme}"
@@ -32,6 +33,17 @@ class Puppet::Util::NetworkDevice::Base_powerconnect
         @transport.user = URI.decode(@url.user)
         @transport.password = URI.decode(asm_decrypt(@url.password))
       end
+    end
+
+    override_using_credential_id
+  end
+
+  def override_using_credential_id
+    if id = @query.fetch('credential_id', []).first
+      require 'asm/cipher'
+      cred = ASM::Cipher.decrypt_credential(id)
+      @transport.user = cred.username
+      @transport.password = cred.password
     end
   end
 
