@@ -15,7 +15,7 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
   def initialize(url, options = {})
     super(url)
     @enable_password = options[:enable_password] || parse_enable(@url.query)
-    @enable_password ||= URI.decode(asm_decrypt(@url.password))
+    @enable_password ||= @transport.password
     @initialized = false
     transport.default_prompt = /[#>]\s?\z/n
   end
@@ -33,13 +33,12 @@ class Puppet::Util::NetworkDevice::Dell_powerconnect::Device < Puppet::Util::Net
 
   def login
     return if transport.handles_login?
-    if @url.user != ''
-      transport.command(@url.user, {:prompt => /^Password:/, :noop => false})
+    if @transport.user != ''
+      transport.command(@transport.user, {:prompt => /^Password:/, :noop => false})
     else
       transport.expect(/^Password:/)
     end
-	password = URI.decode(asm_decrypt(@url.password))
-    transport.command(password, :noop => false)
+    transport.command(@transport.password, :noop => false)
   end
 
   def enable
