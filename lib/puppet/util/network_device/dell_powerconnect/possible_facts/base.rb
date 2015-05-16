@@ -279,8 +279,10 @@ module Puppet::Util::NetworkDevice::Dell_powerconnect::PossibleFacts::Base
         txt.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
           remotedevices[arr[0]] = arr[2]
         end
-        res["remotedeviceinfo"] = remotedevices.to_json
-        res
+        # Commenting remote hash information as mac-address information is
+        # listing from other switches via inter-switch link
+        #res["remotedeviceinfo"] = remotedevices.to_json
+        res["remotedeviceinfo"] = {'name' => 'value'}.to_json
       end
       cmd 'show mac address-table'
     end
