@@ -1,8 +1,6 @@
 Puppet::Type.newtype(:powerconnect_interface) do
   @doc = "Configures PowerConnect switch interface"
 
-  apply_to_device
-
   newparam(:name) do
     desc "Name of the interface. Valid values start with Gigabitethernet or Gi or Tengigabitethernet or Te followed by unit/slot/port."
     isnamevar

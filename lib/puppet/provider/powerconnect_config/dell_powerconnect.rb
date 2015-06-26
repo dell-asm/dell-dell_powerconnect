@@ -1,4 +1,3 @@
-require 'puppet/util/network_device'
 require 'puppet/provider/dell_powerconnect'
 require 'puppet/provider/powerconnect_messages'
 
@@ -10,17 +9,13 @@ require 'puppet/provider/powerconnect_messages'
 
 $CALLER_MODULE = "dell_powerconnect"
 
-Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider::Dell_powerconnect do
+Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => Puppet::Provider::DellPowerconnect do
 
   @doc = "Updates the running-config and startup-config of PowerConnect switch"
 
   mk_resource_methods
 
-  def initialize(device, *args)
-    super
-  end
-
-  def self.lookup(device, name)
+  def self.get_current(name)
   end
 
   def run(url, config_type, force)
@@ -80,7 +75,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     backedupPrevConfig = false
     extBackupConfigfile = ''
 
-    device.transport.command('show backup-config') do |extBackup|
+    session.command('show backup-config') do |extBackup|
       extBackupConfigfile<< extBackup
     end
     if extBackupConfigfile.include? "Configuration script 'backup-config' not found"
@@ -137,15 +132,15 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
 
   def executeCommand(cmd, str)
     yesflag = false
-    device.transport.command(cmd) do |out|
+    session.command(cmd) do |out|
       out.each_line do |line|
         if line.include?(str) && yesflag == false
-          if device.transport.class.name.include?('Ssh')
+          if session.class.name.include?('Ssh')
             command = "y"
           else
             command = "y\r"
           end
-          device.transport.send(command)
+          session.send(command)
           yesflag = true
         end
       end
@@ -154,7 +149,7 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
 
   def getfileMD5(configtype, slice)
     filecontent = ''
-    device.transport.command('show '+configtype) do |out|
+    session.command('show '+configtype) do |out|
       filecontent<< out
       Puppet.debug "out = #{out}"
     end
@@ -164,10 +159,10 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
       return digestlocalfile
     end
 
-    if device.transport.class.name.include? 'Telnet'
+    if session.class.name.include? 'Telnet'
       filecontent.slice!(slice)
     else
-      if device.transport.class.name.include? 'Ssh'
+      if session.class.name.include? 'Ssh'
         index = filecontent.rindex("!Current Configuration")
         filecontent = filecontent[index..-1]
       else
@@ -177,19 +172,19 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     return digestlocalfile
   end
 
-  def reloadswitch()
+  def reloadswitch
     yesflag = false
     doubleflag = false
-    device.transport.command('reload') do |out|
+    session.command('reload') do |out|
       out.each_line do |line|
         if line.start_with?("Are you sure you want to continue") && yesflag == false
-          device.transport.sendwithoutnewline("yy")
+          session.sendwithoutnewline("yy")
           yesflag = true
           doubleflag = true
         end
         if line.start_with?("Are you sure you want to reload the stack")
           if doubleflag == false
-            device.transport.command('y') do |out|
+            session.command('y') do |out|
               break
             end
           end
@@ -203,14 +198,14 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     #device = Puppet::Util::NetworkDevice.current
     #Reesatblish transport session
     Puppet.info("Trying to reconnect to switch...")
-    device.connect_transport
-    device.switch.transport=device.transport
+    transport.connect_session
+    transport.switch.transport=transport.session
     Puppet.info("Session established...")
   end
 
   def getBackupConfig
     fileOut = ''
-    device.transport.command('show backup-config') do |extBackup|
+    session.command('show backup-config') do |extBackup|
       fileOut<< extBackup
     end
     return fileOut
@@ -221,14 +216,14 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     executeCommand('delete backup-config',"Delete backup-config (Y/N)")
   end
 
-  def ping_switch()
+  def ping_switch
     #Sleep for 2 mins to wait for switch to come up
-    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_INFO)
     sleep 270 
 
     Puppet.info(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SWITCH_INFO)
     for i in 0..20
-      if pingable()
+      if pingable?
         Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SUCCESS_DEBUG)
         break
       else
@@ -238,8 +233,8 @@ Puppet::Type.type(:powerconnect_config).provide :dell_powerconnect, :parent => P
     end
   end
 
-  def pingable()
-    output = `ping -c 4 #{device.transport.host}`
+  def pingable?
+    output = `ping -c 4 #{session.host}`
     Puppet.debug "ping output = #{output}"
     return (!output.include? "100% packet loss")
   end

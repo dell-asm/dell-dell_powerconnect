@@ -1,7 +1,7 @@
-require 'puppet/util/network_device'
 require 'puppet/provider/dell_powerconnect'
 require 'puppet/provider/powerconnect_messages'
 require 'puppet/provider/powerconnect_responses'
+require 'puppet_x/dell_powerconnect/transport'
 
 Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent => Puppet::Provider do
 
@@ -9,8 +9,6 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
   mk_resource_methods
   def run(url, forceupdate, saveconfig)
-
-    get_device()
 
     #Check if firmware by the same version already exists on switch
     if exists(url) == true && forceupdate == :false
@@ -23,15 +21,15 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
     if saveconfig == :true
       #Save any unsaved switch configuration changes before rebooting
-      save_switch_config()
+      save_switch_config
     end
 
     #Reboot so that switch boots with new firmware image
-    status = reboot_switch()
+    status = reboot_switch
 
-    if status == true
+    if status
       #Check if switch is back
-      ping_switch()
+      ping_switch
       Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_SUCCESSFUL_INFO)
     else
       raise Puppet::Error, Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_ERROR
@@ -45,7 +43,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
   end
 
   def exists(url)
-    currentfirmwareversion = @device.switch.facts['Active_Software_Version']
+    currentfirmwareversion = transport.switch.facts['Active_Software_Version']
     newfirmwareversion = url.split("\/").last.split("v").last.split(".stk").first
     Puppet.debug(Puppet::Provider::Powerconnect_messages::CHECK_FIRMWARE_VERSION_DEBUG%[currentfirmwareversion,newfirmwareversion])
     if currentfirmwareversion.to_s.strip.eql?(newfirmwareversion.to_s.strip)
@@ -59,7 +57,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     txt = ''
     current_firmware = ''
     new_firmware = url.split("\/").last.split("v").last.split(".stk").first
-    @transport.command('show version 1 | section active') do |out|
+    session.command('show version 1 | section active') do |out|
       txt << out
     end
     txt.each_line do |line|
@@ -86,7 +84,7 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     end
 
     Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_SET_BOOTIMAGE_DEBUG%['backup'])
-    @transport.command('boot system backup') do |out|
+    session.command('boot system backup') do |out|
       txt << out
     end
 
@@ -97,13 +95,13 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     txt = ''
 
     Puppet.debug(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_DOWNLOAD_DEBUG)
-    @transport.command('copy ' + url + ' backup') do |out|
+    session.command('copy ' + url + ' backup') do |out|
       out.each_line do |line|
         if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_START_IMAGE_DOWNLOAD) && yesflag == false
-          if @transport.class.name.include?('Ssh')
-            @transport.send("y")
+          if session.class.name.include?('Ssh')
+            session.send("y")
           else
-            @transport.send("y\r")
+            session.send("y\r")
           end
           yesflag = true
         end
@@ -114,49 +112,28 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
 
   end
 
-  def save_switch_config()
-    yesflag = false
-    txt = ''
-
+  def save_switch_config
     Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_SAVE_CONFIG_INFO)
-    @transport.command('copy running-config startup-config') do |out|
-      out.each_line do |line|
-        if line.start_with?(Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE)&& yesflag == false
-          @transport.sendwithoutnewline("y")
-          yesflag = true
-          return true
-        end
-      end
-      txt << out
-    end
-    raise Puppet::Error, "Error reloading server: #{txt}"
+    session.command('copy running-config startup-config', :prompt => /#{Puppet::Provider::Powerconnect_responses::RESPONSE_SAVE}/)
+    session.command('y')
   end
 
-  def reboot_switch()
-    yesflag = false
-    txt = ''
-
+  def reboot_switch
     Puppet.info("Rebooting the switch")
-    @transport.command('reload') do |out|
-      out.each_line do |line|
-        if line.include?(Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT_VERIFY_REBOOT) && yesflag == false
-          @transport.sendwithoutnewline("y")
-          yesflag = true
-        end
-      end
-      txt << out
-    end
+    session.command('reload', :prompt=>/#{Puppet::Provider::Powerconnect_responses::RESPONSE_REBOOT_VERIFY_REBOOT}/)
+    #Session will terminate after sending yes/y, so we break as soon as we send so no connection error happens.
+    session.command('y') {|out| break}
     true
   end
 
-  def ping_switch()
+  def ping_switch
     #Sleep for 2 mins to wait for switch to come up
-    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPADTE_REBOOT_INFO)
+    Puppet.info(Puppet::Provider::Powerconnect_messages::FIRMWARE_UPDATE_REBOOT_INFO)
     sleep 120
 
     Puppet.info(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SWITCH_INFO)
     for i in 0..20
-      if pingable()
+      if pingable?
         Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_PING_SUCCESS_DEBUG)
         break
       else
@@ -166,27 +143,22 @@ Puppet::Type.type(:powerconnect_firmware).provide :dell_powerconnect, :parent =>
     end
 
     #Re-establish transport session
-    @device.connect_transport
-    @device.switch.transport=@transport
+    transport.connect_session
+    transport.switch.transport=transport.session
     Puppet.debug(Puppet::Provider::Powerconnect_messages::POWERCONNECT_RECONNECT_SWITCH_DEBUG)
   end
 
-  def pingable()
-    output = `ping -c 4 #{@transport.host}`
+  def pingable?
+    output = `ping -c 4 #{session.host}`
     return (!output.include? "100% packet loss")
   end
 
-  def get_device()
-    if Facter.value(:url) then
-      Puppet.debug "Puppet::Util::NetworkDevice::Dell_powerconnect: connecting via facter url."
-      @device ||= Puppet::Util::NetworkDevice::Dell_powerconnect::Device.new(Facter.value(:url))
-      @device.init
-    else
-      @device ||= Puppet::Util::NetworkDevice.current
-      raise Puppet::Error, "Puppet::Util::NetworkDevice::Dell_powerconnect: device not initialized" unless @device
-    end
-    @transport = @device.transport
-    return @device
+  def transport
+    @transport ||= PuppetX::DellPowerconnect::Transport.new(Puppet[:certname])
+  end
+
+  def session
+    transport.session
   end
 
 end

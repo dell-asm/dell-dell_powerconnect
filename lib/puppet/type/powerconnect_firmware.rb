@@ -1,8 +1,6 @@
 Puppet::Type.newtype(:powerconnect_firmware) do
   @doc = "Updates the PowerConnect switch firmware"
 
-  apply_to_device
-
   newparam(:name) do
     isnamevar
   end
