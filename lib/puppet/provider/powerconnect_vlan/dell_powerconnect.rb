@@ -1,23 +1,18 @@
 require 'puppet/provider/dell_powerconnect'
 
-Puppet::Type.type(:powerconnect_vlan).provide :dell_powerconnect, :parent => Puppet::Provider::Dell_powerconnect do
+Puppet::Type.type(:powerconnect_vlan).provide :dell_powerconnect, :parent => Puppet::Provider::DellPowerconnect do
 
   desc "Dell PowerConnect switch provider for VLAN configuration."
   @doc = "Dell PowerConnect switch provider for VLAN configuration."
 
   mk_resource_methods
-  
-  #This method is automatically invoked to initialize newly created instances of the class
-  def initialize(device, *args)
-    super
-  end
 
-  def self.lookup(device, name)
-    device.switch.vlan(name).params_to_hash
+  def self.get_current(name)
+    transport.switch.vlan(name).params_to_hash
   end
 
   def flush
-    device.switch.vlan(name).update(former_properties, properties)
+    transport.switch.vlan(name).update(former_properties, properties)
     super
   end
 end

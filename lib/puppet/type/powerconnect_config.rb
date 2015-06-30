@@ -2,8 +2,6 @@ Puppet::Type.newtype(:powerconnect_config) do
 
   @doc = "Updates the running-config and startup-config of PowerConnect switch"
 
-  apply_to_device
-
   newparam(:name) do
     isnamevar
   end

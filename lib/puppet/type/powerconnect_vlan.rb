@@ -1,8 +1,6 @@
 Puppet::Type.newtype(:powerconnect_vlan) do
   @doc = "Configures VLANs on a PowerConnect switch"
 
-  apply_to_device
-
   ensurable
 
   newparam(:name) do

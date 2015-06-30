@@ -1,8 +1,6 @@
 Puppet::Type.newtype(:powerconnect_portchannel) do
   @doc = "Configures the port-channel in a PowerConnect switch"
 
-  apply_to_device
-
   newparam(:name) do
     desc "Port-channel number"
     isnamevar
