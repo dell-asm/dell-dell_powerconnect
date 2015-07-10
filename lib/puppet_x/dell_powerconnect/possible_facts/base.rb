@@ -29,7 +29,8 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show bootvar'
     end
 
-    base.register_param 'systemmodelid' do
+    #TODO:  GO UPDATE THE JAVA SIDE TO LOOK FOR MODEL INSTEAD OF SYSTEMMODELID
+    base.register_param 'model' do
       match do |txt|
         txt.scan(/^System\s+Model\s+ID:\s+(.+)$/).flatten.first
       end
@@ -272,17 +273,20 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
 
     base.register_param 'remotedeviceinfo' do
       res = Hash.new
-      remotedevices = Hash.new
+      devices = Hash.new
       match do |txt|
-        txt.scan(/^\d+\s+(\S+)\s+(\S+)\s+(\S+)/) do |arr|
-          remotedevices[arr[0]] = arr[2]
+        txt.split(/\n+/).each do |line|
+          #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
+          tokens = line.scan(/\S+/)
+          port = tokens[0]
+          mac = tokens[2]
+          devices[mac] = port
         end
         # Commenting remote hash information as mac-address information is
         # listing from other switches via inter-switch link
-        #res["remotedeviceinfo"] = remotedevices.to_json
-        res["remotedeviceinfo"] = {'name' => 'value'}.to_json
+        res["remotedeviceinfo"] = devices.to_json
       end
-      cmd 'show mac address-table'
+      cmd 'show lldp remote-device all'
     end
 
     base.register_param 'Active_Software_Version' do

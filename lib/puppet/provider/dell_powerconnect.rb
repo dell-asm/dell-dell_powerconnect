@@ -1,4 +1,5 @@
 require 'puppet/provider/network_device'
+require 'puppet_x/dell_powerconnect/transport'
 
 # This is the base Class of all prefetched Dell PowerConnect device providers
 class Puppet::Provider::DellPowerconnect < Puppet::Provider::NetworkDevice

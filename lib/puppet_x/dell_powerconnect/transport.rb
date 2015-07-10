@@ -14,7 +14,7 @@ module PuppetX
 
         unless @session
           require "puppet_x/dell_powerconnect/transport/ssh"
-          @session = PuppetX::DellPowerconnect::Transport::Ssh.new
+          @session = PuppetX::DellPowerconnect::Transport::Ssh.new(true)
           @session.host = device_conf[:host]
           @session.port = device_conf[:port] || 22
           if device_conf[:arguments]['credential_id']
