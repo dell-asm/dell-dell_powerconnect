@@ -18,16 +18,32 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
 
   def self.register(base)
     configureinterface(base, :description)
-    configureinterface(base, :mtu, "mtu")
-    configureinterface(base, :mode, "switchport mode")
-    configureinterface(base, :add_vlan_access_mode) do
+    configureinterface(base, :portfast, "spanning-tree") do
+      match /switchport mode ([\w-]+)/
+      add do |transport, value|
+        if value == :true
+          transport.command("#{spanning-tree} portfast")
+        else
+          transport.command("no #{spanning-tree} portfast")
+        end
+      end
+      remove { |*_| }
+    end
+    configureinterface(base, :switchport_mode, "switchport mode") do
+      match /switchport mode ([\w-]+)/
+      add do |transport, value|
+        transport.command("switchport mode #{value}")
+      end
+      remove { |*_| }
+    end
+    configureinterface(base, :access_vlan) do
       match /switchport access vlan/
       add do |transport, value|
         transport.command("switchport access vlan  #{value}")
       end
       remove { |*_| }
     end
-    configureinterface(base, :remove_vlan_access_mode) do
+    configureinterface(base, :remove_access_vlan) do
       match /switchport access vlan/
       add do |transport, value|
         if value == :true
@@ -36,53 +52,51 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       end
       remove { |*_| }
     end
-    configureinterface(base, :add_vlans_general_mode) do
-      match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
-      after :mode
+    configureinterface(base, :tagged_general_vlans) do
+      match /^\s*switchport general allowed vlan add\s+(.*)\s*tagged$/
+      after :switchport_mode
       add do |transport, value|
         transport.command("switchport general allowed vlan add #{value} tagged") do |out|
           out.each_line do |line|
             if line.match(/ERROR:/)
-              Puppet.warning "#{line}"
-              #raise "#{line}"
+              Puppet.warning "Could not add general tagged VLAN #{value}: #{line}"
             end
           end
         end
       end
       remove { |*_| }
     end
-    configureinterface(base, :untag_vlans_general_mode) do
-      match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
-      after :mode
+    configureinterface(base, :untagged_general_vlans) do
+      match /^\s*switchport general allowed vlan add\s+(.*)\s*(?<!tagged)$/
+      after :switchport_mode
       add do |transport, value|
+        transport.command("switchport general pvid #{value}")
         transport.command("switchport general allowed vlan add #{value}") do |out|
           out.each_line do |line|
             if line.match(/ERROR:/)
-              Puppet.warning "#{line}"
-              #raise "#{line}"
+              Puppet.warning "Could not add general untagged VLAN #{value}: #{line}"
             end
           end
         end
       end
       remove { |*_| }
     end
-    configureinterface(base, :remove_vlans_general_mode) do
+    configureinterface(base, :remove_general_vlans) do
       match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
-
-      after :mode
+      after :switchport_mode
       add do |transport, value|
         transport.command("switchport general allowed vlan remove #{value}")
       end
       remove { |*_| }
     end
-    configureinterface(base, :add_vlans_trunk_mode) do
-      match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
-      after :mode
+    configureinterface(base, :trunk_vlans) do
+      match /^\s*switchport trunk allowed vlan\s+(.*?)\s*$/
+      after :switchport_mode
       add do |transport, value|
         transport.command("switchport trunk allowed vlan add #{value}") do |out|
           out.each_line do |line|
             if line.match(/ERROR:/)
-              Puppet.warning "#{line}"
+              Puppet.warning "Could not add trunk tagged VLAN #{value}: #{line}"
               #raise "#{line}"
             end
           end
@@ -90,9 +104,9 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       end
       remove { |*_| }
     end
-    configureinterface(base, :remove_vlans_trunk_mode) do
-      match /^\s*switchport general allowed vlan\s+(.*?)\s*$/
-      after :mode
+    configureinterface(base, :remove_trunk_vlans) do
+      match /^\s*switchport trunk allowed vlan\s+(.*?)\s*$/
+      after :switchport_mode
       add do |transport, value|
         transport.command("switchport trunk allowed vlan remove #{value}")
       end

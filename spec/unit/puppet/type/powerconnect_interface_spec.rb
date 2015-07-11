@@ -10,11 +10,11 @@ describe Puppet::Type.type(:powerconnect_interface) do
   context 'should compile with given test params' do
     let(:params) { {
         :description   => 'ServerPort2',
-        :mode => 'general',
-        :add_valns_in_general_mode   => '1-10',
-        :add_valns_in_trunk_mode   => '15-20',
-        :remove_valns_in_general_mode   => '12',
-        :remove_valns_in_trunk_mode   => '22,25',
+        :switchport_mode => 'general',
+        :tagged_general_vlans   => '1-10',
+        :trunk_vlans   => '15-20',
+        :remove_general_vlans   => '12',
+        :remove_trunk_vlans   => '22,25',
         :shutdown   => false,
         :mtu => 9216,
       }}
@@ -38,9 +38,9 @@ describe Puppet::Type.type(:powerconnect_interface) do
       end
     end
 
-    [:description, :mode, :add_vlans_trunk_mode,
-      :remove_vlans_trunk_mode, :add_vlans_general_mode,
-      :remove_vlans_general_mode, :add_interface_to_portchannel,
+    [:description, :switchport_mode, :trunk_vlans,
+      :remove_trunk_vlans, :tagged_general_vlans,
+      :remove_general_vlans, :add_interface_to_portchannel,
       :remove_interface_from_portchannel, :shutdown, :mtu
     ].each do |p|
       it "should have a #{p} property" do
@@ -61,12 +61,12 @@ describe Puppet::Type.type(:powerconnect_interface) do
     describe 'VLAN memebership mode of an interface' do
       [ :access, :general, :trunk ].each do |val|
         it "should allow the value #{val.inspect}" do
-          described_class.new(:name =>name, :mode => val)
+          described_class.new(:name =>name, :switchport_mode => val)
         end
       end
 
       it "should raise an exception on everything else" do
-        expect { described_class.new(:mode => "somethingelse") }.to raise_error
+        expect { described_class.new(:switchport_mode => "somethingelse") }.to raise_error
       end
     end
 
@@ -82,13 +82,13 @@ describe Puppet::Type.type(:powerconnect_interface) do
         ["1,10,12-15", "a list of non consecutive vlans and ranges"],
       ].each do |value, desc|
         it "should allow setting allowed vlans to #{desc}: #{value.inspect}" do
-          described_class.new(:name => name, :add_vlans_trunk_mode => value, :add_vlans_general_mode => value)
+          described_class.new(:name => name, :trunk_vlans => value, :tagged_general_vlans => value)
         end
       end
 
       [ "VLAN1", "1-", "1,-", "-", "," ].each do |value|
         it "should not allow vlan values to be #{value.inspect}" do
-          expect { described_class.new(:name => name, :add_vlans_trunk_mode => value, :add_vlans_general_mode => value) }.to raise_error
+          expect { described_class.new(:name => name, :trunk_vlans => value, :tagged_general_vlans => value) }.to raise_error
         end
       end
     end
@@ -105,13 +105,13 @@ describe Puppet::Type.type(:powerconnect_interface) do
         ["1,10,12-15", "a list of non consecutive vlans and ranges"],
       ].each do |value, desc|
         it "should allow setting removed vlans to #{desc}: #{value.inspect}" do
-          described_class.new(:name => name, :remove_vlans_trunk_mode => value, :remove_vlans_general_mode => value)
+          described_class.new(:name => name, :remove_trunk_vlans => value, :remove_general_vlans => value)
         end
       end
 
       [ "VLAN1", "1-", "1,-", "-", "," ].each do |value|
         it "should not allow vlan values to be #{value.inspect}" do
-          expect { described_class.new(:name => name, :remove_vlans_trunk_mode => value, :remove_vlans_general_mode => value) }.to raise_error
+          expect { described_class.new(:name => name, :remove_trunk_vlans => value, :remove_general_vlans => value) }.to raise_error
         end
       end
     end

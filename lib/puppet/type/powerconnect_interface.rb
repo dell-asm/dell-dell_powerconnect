@@ -17,69 +17,121 @@ Puppet::Type.newtype(:powerconnect_interface) do
     newvalues(/("([^"]*)")|(\A[^\n\s]\S+$)/)
   end
 
-  newproperty(:mode) do
+  newproperty(:switchport_mode) do
     desc "Configure the VLAN membership mode of an interface. Valid values are access, trunk, or general."
     newvalues(:access, :general, :trunk)
   end
 
-  newproperty(:add_vlan_access_mode) do
+  newproperty(:portfast) do
+    desc "Whether to enable or disable spanning-tree portfast"
+    newvalues(:true, :false)
+  end
+
+  newproperty(:access_vlan) do
       desc "Configures the VLAN ID when the interface is in access mode."
       defaultto(:absent)
       newvalues(:absent, /^\d+$/)
       validate do |value|
-        return if value == :absent
-        return unless value.to_s.match(/^\d+$/)
-        raise ArgumentError, "An invalid vlan value is entered. The 'Vlan' vlaue must be between 1 and 4093." unless value.to_i >= 1 && value.to_i <= 4093
+        return if value == :absent || value.empty?
+        raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+        value.split(',').each do |vlan_value|
+          raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+          vlan_value.split('-').each do |vlan|
+            all_valid_characters = vlan =~ /^[0-9]+$/
+            raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+          end
+        end
       end
     end
   
-    newproperty(:remove_vlan_access_mode) do
+    newproperty(:remove_access_vlan) do
       desc "Remove the VLAN configured in access mode."
       defaultto(false)
       newvalues(false,true)
+      validate do |value|
+        return if value == :absent || value.empty?
+        raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+        value.split(',').each do |vlan_value|
+          raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+          vlan_value.split('-').each do |vlan|
+            all_valid_characters = vlan =~ /^[0-9]+$/
+            raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+          end
+        end
+      end
     end
     
-  newproperty(:add_vlans_general_mode) do
+  newproperty(:tagged_general_vlans) do
     desc "VLANs to add to a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of VLAN IDs."
     validate do |value|
-      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
-        raise ArgumentError, "%s is not a valid input for add_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      return if value == :absent || value.empty?
+      raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+      value.split(',').each do |vlan_value|
+        raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+        vlan_value.split('-').each do |vlan|
+          all_valid_characters = vlan =~ /^[0-9]+$/
+          raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+        end
       end
     end
   end
 
-   newproperty(:untag_vlans_general_mode) do
+   newproperty(:untagged_general_vlans) do
     desc "Untagged VLANs to add to a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of VLAN IDs."
     validate do |value|
-      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
-        raise ArgumentError, "%s is not a valid input for untag_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      return if value == :absent || value.empty?
+      raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+      value.split(',').each do |vlan_value|
+        raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+        vlan_value.split('-').each do |vlan|
+          all_valid_characters = vlan =~ /^[0-9]+$/
+          raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+        end
       end
     end
   end
 
-  newproperty(:remove_vlans_general_mode) do
+  newproperty(:remove_general_vlans) do
     desc "VLANs to remove from a general port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
-        raise ArgumentError, "%s is not a valid input for remove_vlans_general_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      return if value == :absent || value.empty?
+      raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+      value.split(',').each do |vlan_value|
+        raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+        vlan_value.split('-').each do |vlan|
+          all_valid_characters = vlan =~ /^[0-9]+$/
+          raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+        end
       end
     end
   end
 
-  newproperty(:add_vlans_trunk_mode) do
+  newproperty(:trunk_vlans) do
     desc "VLANs to add to a trunk port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
-        raise ArgumentError, "%s is not a valid input for add_vlans_trunk_mode. Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      return if value == :absent || value.empty?
+      raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+      value.split(',').each do |vlan_value|
+        raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+        vlan_value.split('-').each do |vlan|
+          all_valid_characters = vlan =~ /^[0-9]+$/
+          raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+        end
       end
     end
   end
 
-  newproperty(:remove_vlans_trunk_mode) do
+  newproperty(:remove_trunk_vlans) do
     desc "Remove VLANs from a trunk port. Specify non consecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs."
     validate do |value|
-      unless value =~ /^(\d+(-\d+)?,)*\d+(-\d+)?$/
-        raise ArgumentError, "%s is not a valid input for remove_vlans_trunk_mode.  Separate nonconsecutive VLAN IDs with a comma and no spaces. Use a hyphen to designate a range of IDs." % value
+      return if value == :absent || value.empty?
+      raise ArgumentError, "Invalid vlan list: #{value}" if value.include?(',') && !(value.split(',').size > 0)
+      value.split(',').each do |vlan_value|
+        raise ArgumentError, "Invalid range definition: #{value}" if value.include?('-') && value.split('-').size != 2
+        vlan_value.split('-').each do |vlan|
+          all_valid_characters = vlan =~ /^[0-9]+$/
+          raise ArgumentError, "An invalid VLAN ID #{vlan_value} is entered.All VLAN values must be between 1 and 4094." unless all_valid_characters && vlan.to_i >= 1 && vlan.to_i <= 4094
+        end
       end
     end
   end

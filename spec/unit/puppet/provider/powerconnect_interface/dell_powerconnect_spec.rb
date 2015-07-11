@@ -15,11 +15,11 @@ describe provider_class do
     Puppet::Provider::DellPowerconnect.stub(:transport).and_return(@transport)
 
     @resource = double("resource", :description   => 'ServerPort2',
-    :mode => 'general',
-    :add_vlans_in_general_mode   => '1-10',
-    :add_vlans_in_trunk_mode   => '15-20',
-    :remove_vlans_in_general_mode   => '12',
-    :remove_vlans_in_trunk_mode   => '22,25',
+    :switchport_mode => 'general',
+    :tagged_general_vlans   => '1-10',
+    :trunk_vlans   => '15-20',
+    :remove_general_vlans   => '12',
+    :remove_trunk_vlans   => '22,25',
     :shutdown   => false,
     :mtu => 9216 )
 
@@ -43,19 +43,19 @@ describe provider_class do
       @transport.should_receive(:switch).and_return(@switch)
       @switch.should_receive(:interface).with('GigabitEthernet1/0/2').and_return(@interface)
       @interface.should_receive(:params_to_hash).and_return( :description   => 'ServerPort2',
-      :mode => 'general',
-      :add_vlans_in_general_mode   => '1-10',
-      :add_vlans_in_trunk_mode   => '15-20',
-      :remove_vlans_in_general_mode   => '12',
-      :remove_vlans_in_trunk_mode   => '22,25',
+      :switchport_mode => 'general',
+      :tagged_general_vlans   => '1-10',
+      :trunk_vlans   => '15-20',
+      :remove_general_vlans   => '12',
+      :remove_trunk_vlans   => '22,25',
       :shutdown   => false,
       :mtu => 9216 )
       provider_class.get_current('GigabitEthernet1/0/2').should == { :description   => 'ServerPort2',
-        :mode => 'general',
-        :add_vlans_in_general_mode   => '1-10',
-        :add_vlans_in_trunk_mode   => '15-20',
-        :remove_vlans_in_general_mode   => '12',
-        :remove_vlans_in_trunk_mode   => '22,25',
+        :switchport_mode => 'general',
+        :tagged_general_vlans   => '1-10',
+        :trunk_vlans   => '15-20',
+        :remove_general_vlans   => '12',
+        :remove_trunk_vlans   => '22,25',
         :shutdown   => false,
         :mtu => 9216 }
     end
@@ -64,34 +64,34 @@ describe provider_class do
   describe "when the configuration is being flushed" do
     it "should call the configuration update method with current and past properties" do
       @instance = provider_class.new(:name => "GigabitEthernet1/0/2",  :description   => 'ServerPort2',
-      :mode => 'general',
-      :add_vlans_in_general_mode   => '1-10',
-      :add_vlans_in_trunk_mode   => '15-20',
-      :remove_vlans_in_general_mode   => '12',
-      :remove_vlans_in_trunk_mode   => '22,25',
+      :switchport_mode => 'general',
+      :tagged_general_vlans   => '1-10',
+      :trunk_vlans   => '15-20',
+      :remove_general_vlans   => '12',
+      :remove_trunk_vlans   => '22,25',
       :shutdown   => false,
       :mtu => 9216)
       @instance.transport.should_receive(:switch).and_return(@switch)
       @switch.should_receive(:interface).with('GigabitEthernet1/0/2').and_return(@interface)
       @interface.should_receive(:update).with({:name => 'GigabitEthernet1/0/2',  :description   => 'ServerPort2',
-        :mode => 'general',
-        :add_vlans_in_general_mode   => '1-10',
-        :add_vlans_in_trunk_mode   => '15-20',
-        :remove_vlans_in_general_mode   => '12',
-        :remove_vlans_in_trunk_mode   => '22,25',
+        :switchport_mode => 'general',
+        :tagged_general_vlans   => '1-10',
+        :trunk_vlans   => '15-20',
+        :remove_general_vlans   => '12',
+        :remove_trunk_vlans   => '22,25',
         :shutdown   => false,
         :mtu => 9216 },
       { :name => "GigabitEthernet1/0/2",  :description   => 'Server ISCI port',
-        :mode => 'trunk',
-        :add_vlans_in_general_mode   => '1-10',
-        :add_vlans_in_trunk_mode   => '15-20',
-        :remove_vlans_in_general_mode   => '12',
-        :remove_vlans_in_trunk_mode   => '22,25',
+        :switchport_mode => 'trunk',
+        :tagged_general_vlans   => '1-10',
+        :trunk_vlans   => '15-20',
+        :remove_general_vlans   => '12',
+        :remove_trunk_vlans   => '22,25',
         :shutdown   => false,
         :mtu => 9216 })
 
       @instance.description = "Server ISCI port"
-      @instance.mode = "trunk"
+      @instance.switchport_mode = "trunk"
       @instance.flush
     end
   end
