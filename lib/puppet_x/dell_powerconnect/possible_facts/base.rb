@@ -29,7 +29,6 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show bootvar'
     end
 
-    #TODO:  GO UPDATE THE JAVA SIDE TO LOOK FOR MODEL INSTEAD OF SYSTEMMODELID
     base.register_param 'model' do
       match do |txt|
         txt.scan(/^System\s+Model\s+ID:\s+(.+)$/).flatten.first

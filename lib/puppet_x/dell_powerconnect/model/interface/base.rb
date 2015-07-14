@@ -22,9 +22,9 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       match /switchport mode ([\w-]+)/
       add do |transport, value|
         if value == :true
-          transport.command("#{spanning-tree} portfast")
+          transport.command("spanning-tree portfast")
         else
-          transport.command("no #{spanning-tree} portfast")
+          transport.command("no spanning-tree portfast")
         end
       end
       remove { |*_| }
