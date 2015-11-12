@@ -275,8 +275,9 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       remote_device = nil
       remote_device_info_list = []
       match do |txt|
-        txt.split(/\n+/).each do |line|
+        txt.split(/\n+/).each_with_index do |line, i|
           #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
+          next if i < 5  # Skip the first 5 lines (headers)
           tokens = line.scan(/\S+/)
           interface = tokens[0]
           location = tokens[3]
