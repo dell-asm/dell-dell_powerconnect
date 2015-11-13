@@ -279,11 +279,16 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
           #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
           next if i < 5  # Skip the first 5 lines (headers)
           tokens = line.scan(/\S+/)
+          next unless tokens.size == 5
+
           interface = tokens[0]
           location = tokens[3]
           remote_mac = tokens[2]
           remote_system_name = tokens[4]
-          remote_device = {:interface => interface, :location => location,:remote_mac => remote_mac,:remote_system_name => remote_system_name}
+
+          next unless remote_mac =~ /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/i
+
+          remote_device = {:interface => interface, :location => location, :remote_mac => remote_maca ,:remote_system_name => remote_system_name}
           remote_device_info_list << remote_device
         end
         res["remote_device_info"] = remote_device_info_list.uniq.to_json
@@ -305,10 +310,10 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
         end
         # Commenting remote hash information as mac-address information is
         # listing from other switches via inter-switch link
-        res["remotedeviceinfo"] = devices.to_json        
+        res["remotedeviceinfo"] = devices.to_json
       end
       cmd 'show lldp remote-device all'
-    end    
+    end
 
     base.register_param 'Active_Software_Version' do
       match do |txt|
