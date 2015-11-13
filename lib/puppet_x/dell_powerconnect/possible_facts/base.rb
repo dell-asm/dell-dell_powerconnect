@@ -304,8 +304,13 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
         txt.split(/\n+/).each do |line|
           #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
           tokens = line.scan(/\S+/)
+          next unless tokens.size == 5
+
           port = tokens[0]
           mac = tokens[2]
+
+          next unless mac =~ /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/i
+
           devices[mac] = port
         end
         # Commenting remote hash information as mac-address information is
