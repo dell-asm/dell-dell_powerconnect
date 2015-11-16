@@ -288,7 +288,7 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
 
           next unless remote_mac =~ /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/i
 
-          remote_device = {:interface => interface, :location => location, :remote_mac => remote_maca ,:remote_system_name => remote_system_name}
+          remote_device = {:interface => interface, :location => location, :remote_mac => remote_mac ,:remote_system_name => remote_system_name}
           remote_device_info_list << remote_device
         end
         res["remote_device_info"] = remote_device_info_list.uniq.to_json
