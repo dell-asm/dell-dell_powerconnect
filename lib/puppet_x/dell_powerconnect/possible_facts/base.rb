@@ -279,7 +279,7 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
           #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
           next if i < 5  # Skip the first 5 lines (headers)
           tokens = line.scan(/\S+/)
-          next unless tokens.size == 5
+          next unless tokens.size > 3
 
           interface = tokens[0]
           location = tokens[3]
