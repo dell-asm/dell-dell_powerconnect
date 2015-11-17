@@ -304,7 +304,7 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
         txt.split(/\n+/).each do |line|
           #Line will be something like "Te1/0/5   29      AA:BB:CC:DD:EE:FF   eth0                name"
           tokens = line.scan(/\S+/)
-          next unless tokens.size == 5
+          next unless tokens.size > 3
 
           port = tokens[0]
           mac = tokens[2]
