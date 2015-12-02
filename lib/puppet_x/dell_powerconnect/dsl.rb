@@ -160,4 +160,73 @@ module PuppetX::DellPowerconnect::Dsl
       end
     end
   end
+
+  def vlan_data
+    {
+      "tagged_tengigabit" => [],
+      "untagged_tengigabit" => [],
+      "tagged_fortygigabit" => [],
+      "untagged_fortygigabit" => [],
+      "tagged_portchannel" => [],
+      "untagged_portchannel" =>[]
+    }
+  end
+
+  def vlan_information(txt)
+    vlans = {}
+    interface_id = nil
+    txt.split(/\n+/).each_with_index do |line, i|
+      next if i < 5 #skip headers
+      tokens = line.scan(/\S+/)
+      next if tokens[-2] == "T"
+      if tokens.size == 1
+        port_groups = tokens[0].split(",")
+        port_group_parser(port_groups, vlans, interface_id)
+      elsif tokens.size > 7
+        interface_id = tokens[0]
+        port_groups = tokens.last.split(",")
+        port_group_parser(port_groups, vlans, interface_id)
+      end
+    end
+    #Clean up data
+    vlans.each do |vlan, data|
+      data.each do |type, ports|
+        next unless ports
+        if ports.empty?
+          ports = {}
+        else
+          ports = ports.uniq.join(",") if ports.class == Array
+        end
+        data[type] = ports
+      end
+    end
+    vlans
+  end
+
+  def port_group_parser(port_groups,vlans, interface_id)
+    port_groups.each do |group|
+      vlan_group = group.scan(/(\d*-*\d*)/).flatten.reject{|c| c.empty?}[0]
+      next if vlan_group.nil?
+      vlan_set = []
+      if vlan_group.include? "-"
+        first = vlan_group.split("-")[0].to_i
+        last = vlan_group.split("-")[1].to_i
+        (first..last).each do |i|
+          vlan_set << i.to_s
+        end
+      else
+        vlan_set << vlan_group
+      end
+      vlan_set.each do |v|
+        vlans[v] ||= vlan_data
+        if group.include? "("
+          vlans[v]["untagged_tengigabit"] << interface_id if interface_id.start_with? "Te"
+          vlans[v]["untagged_fortygigabit"] << interface_id if interface_id.start_with? "Fo"
+        else
+          vlans[v]["tagged_tengigabit"] << interface_id if interface_id.start_with? "Te"
+          vlans[v]["tagged_fortygigabit"] << interface_id if interface_id.start_with? "Fo"
+        end
+      end
+    end
+  end
 end

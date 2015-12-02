@@ -327,5 +327,13 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show running-config'
     end
 
+    base.register_param 'vlan_information' do
+      match do |txt|
+        base.vlan_information(txt).to_json
+      end
+      cmd "show interface status"
+    end
+
   end
+
 end
