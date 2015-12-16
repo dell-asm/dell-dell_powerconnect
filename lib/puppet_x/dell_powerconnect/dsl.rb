@@ -193,7 +193,7 @@ module PuppetX::DellPowerconnect::Dsl
       data.each do |type, ports|
         next unless ports
         if ports.empty?
-          ports = {}
+          ports = ""
         else
           ports = ports.uniq.join(",") if ports.class == Array
         end
