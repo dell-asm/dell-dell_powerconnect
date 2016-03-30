@@ -11,6 +11,14 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show system'
     end
 
+    base.register_param 'snmp_community_string' do
+      match  do |txt|
+        item = txt.scan(/^(\w+)\s+\w+.\w+\s+\w+\s+\w+$/).flatten
+        item.to_json
+      end
+      cmd 'show snmp'
+    end
+
     base.register_param 'system_description' do
       match do |txt|
         txt.scan(/^System\s+Description:\s+(.+)$/).flatten.first
