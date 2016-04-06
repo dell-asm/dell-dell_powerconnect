@@ -19,6 +19,13 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show snmp'
     end
 
+    base.register_param 'management_ip' do
+      match do |txt|
+        @transport.host
+      end
+      cmd 'show ip interface'
+    end
+
     base.register_param 'system_description' do
       match do |txt|
         txt.scan(/^System\s+Description:\s+(.+)$/).flatten.first
