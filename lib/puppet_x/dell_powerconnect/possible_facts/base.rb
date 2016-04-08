@@ -11,6 +11,21 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       cmd 'show system'
     end
 
+    base.register_param 'snmp_community_string' do
+      match  do |txt|
+        item = txt.scan(/^(\w+)\s+\w+.\w+\s+\w+\s+\w+$/).flatten
+        item.to_json
+      end
+      cmd 'show snmp'
+    end
+
+    base.register_param 'management_ip' do
+      match do |txt|
+        @transport.host
+      end
+      cmd 'show ip interface'
+    end
+
     base.register_param 'system_description' do
       match do |txt|
         txt.scan(/^System\s+Description:\s+(.+)$/).flatten.first
@@ -294,7 +309,7 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
         res["remote_device_info"] = remote_device_info_list.uniq.to_json
         res
       end
-        cmd 'show lldp remote-device all'
+      cmd 'show lldp remote-device all'
     end
 
     base.register_param 'remotedeviceinfo' do
