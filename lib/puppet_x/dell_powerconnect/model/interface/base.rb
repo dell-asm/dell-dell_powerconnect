@@ -23,7 +23,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
 
     configureinterface(base, :portfast, "spanning-tree") do
       match /switchport mode ([\w-]+)/
-      add do |transport,value|
+      add do |transport, value|
         if value == :true
           transport.command("spanning-tree portfast")
         else
@@ -35,7 +35,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
 
     configureinterface(base, :switchport_mode, "switchport mode") do
       match /switchport mode ([\w-]+)/
-      add do |transport,value|
+      add do |transport, value|
         transport.command("switchport mode #{value}")
       end
       remove { |*_| }
