@@ -1,0 +1,8 @@
+center-bridging
+priority-flow-control mode on
+priority-flow-control priority 4 no-drop
+exit
+spanning-tree portfast
+switchport mode general
+switchport general pvid 29
+switchport general allowed vlan add 18,20,23-25,28 tagged
