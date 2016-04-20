@@ -1,0 +1,8 @@
+center-bridging
+priority-flow-control mode on
+priority-flow-control priority 4 no-drop
+exit
+spanning-tree portfast
+switchport mode general
+switchport general pvid
+switchport general allowed vlan add  tagged
