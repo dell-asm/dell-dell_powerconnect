@@ -71,7 +71,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
     end
 
     configureinterface(base, :untagged_general_vlans) do
-      match /^\s*switchport general allowed vlan add\s+(.*)\s*(?<!tagged)$/
+      match /^\s*switchport general pvid\s+(\d+)$/
       after :switchport_mode
       add do |transport, value|
         interface_info = PuppetX::DellPowerconnect::Model::Interface::Base.interface_type(scope_name)
