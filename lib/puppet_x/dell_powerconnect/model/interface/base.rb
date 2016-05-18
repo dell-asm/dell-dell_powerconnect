@@ -220,6 +220,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
     Puppet.debug("Adding vlans #{untagged_vlan}")
     transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
     transport.command("switchport mode general")
+    transport.command("switchport general allowed vlan add #{untagged_vlan}")
     transport.command("switchport general pvid #{untagged_vlan}")
 
     transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
