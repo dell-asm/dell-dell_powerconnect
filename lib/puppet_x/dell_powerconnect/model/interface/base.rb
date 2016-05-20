@@ -77,6 +77,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
         interface_info = PuppetX::DellPowerconnect::Model::Interface::Base.interface_type(scope_name)
         tagged, untagged = PuppetX::DellPowerconnect::Model::Interface::Base.show_vlans(transport, interface_info)
         PuppetX::DellPowerconnect::Model::Interface::Base.update_untagged_vlans(transport, [tagged, untagged], interface_info, value)
+        PuppetX::DellPowerconnect::Model::Interface::Base.update_traffic_allowed_vlans(transport, [tagged, untagged], interface_info, value)
       end
       remove { |*_|}
     end
@@ -201,6 +202,8 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
       transport.command("switchport mode general")
       transport.command("switchport general allowed vlan add #{val} tagged")
+      transport.command("exit")
+      transport.command("exit")
     end
     transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
   end
@@ -218,11 +221,51 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
 
     untagged_vlan = vlans_to_add.first
     Puppet.debug("Adding vlans #{untagged_vlan}")
+    transport.command("config")
     transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
     transport.command("switchport mode general")
-    transport.command("switchport general allowed vlan add #{untagged_vlan}")
     transport.command("switchport general pvid #{untagged_vlan}")
-
+    transport.command("exit")
+    transport.command("exit")
     transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+  end
+
+  def self.update_traffic_allowed_vlans(transport, existing_vlans, interface_val, value)
+    untagged_vlans = existing_vlans[1]
+    get_vlan_info = transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+    meta_data = get_vlan_info.match /^switchport general allowed vlan add ([0-9,-]+)$/
+    vlan_info = meta_data.nil? ? "" : meta_data[1]
+    vlan_arr = vlan_info.split(",")
+    vlan_allowed = []
+    value = value.split(",").map(&:to_i)
+    vlan_arr.each do |num_str|
+      num = num_str.to_i
+      if num_str == num.to_s
+        vlan_allowed << num
+      else
+        nums = num_str.split("-").map(&:to_i)
+        nums[0].upto(num[1]).each do |range_num|
+          vlan_allowed << range_num
+        end
+      end
+    end
+
+    vlans_to_remove = vlan_allowed - value
+    vlans_to_remove.each do |vlan|
+      Puppet.debug("Removing switchport allowed vlans #{vlan}")
+      transport.command("config")
+      transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+      transport.command("switchport mode general")
+      transport.command("switchport general allowed vlan remove #{vlan}")
+    end
+
+    vlans_to_add = value - vlan_allowed
+    vlans_to_add.each do |vlan|
+      Puppet.debug("Adding switchport allowed vlan #{vlan}")
+      transport.command("config")
+      transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+      transport.command("switchport mode general")
+      transport.command("switchport general allowed vlan add #{vlan}")
+    end
   end
 end
