@@ -49,6 +49,8 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
       expect(transport).to receive(:command).with("switchport mode general").ordered
       expect(transport).to receive(:command).with("switchport general allowed vlan add 20 tagged").ordered
+      expect(transport).to receive(:command).with("exit").ordered
+      expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("show running-config interface Te1/0/29").ordered
       base.update_tagged_vlans(transport, [[], []], ["Te1", 0, 29], "20")
     end
@@ -65,6 +67,8 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
       expect(transport).to receive(:command).with("switchport mode general").ordered
       expect(transport).to receive(:command).with("switchport general allowed vlan add 28 tagged").ordered
+      expect(transport).to receive(:command).with("exit").ordered
+      expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("show running-config interface Te1/0/29").ordered
       base.update_tagged_vlans(transport, [[18, 20], [29]], ["Te1", 0, 29], "28")
     end
@@ -72,10 +76,12 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
 
   describe "#update_untagged_vlans" do
     it "should add untagged vlans" do
+      expect(transport).to receive(:command).with("config").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
       expect(transport).to receive(:command).with("switchport mode general").ordered
-      expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
       expect(transport).to receive(:command).with("switchport general pvid 29").ordered
+      expect(transport).to receive(:command).with("exit").ordered
+      expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("show running-config interface Te1/0/29").ordered
       base.update_untagged_vlans(transport, [[], []], ["Te1", 0, 29], "29")
     end
@@ -86,12 +92,57 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
     end
 
     it "should set untagged vlans" do
+      expect(transport).to receive(:command).with("config").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
       expect(transport).to receive(:command).with("switchport mode general").ordered
-      expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
       expect(transport).to receive(:command).with("switchport general pvid 29").ordered
+      expect(transport).to receive(:command).with("exit").ordered
+      expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("show running-config interface Te1/0/29").ordered
       base.update_untagged_vlans(transport, [[], [30]], ["Te1", 0, 29], "29")
     end
   end
+
+  describe "#update_traffic_allowed_valns" do
+    it "should add untagged vlan traffic to switchport" do
+      vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_nountagged_traffic.out")
+      transport.stub(:command).with("show running-config interface Te1/0/29").and_return(vlan_info)
+      expect(transport).to receive(:command).with("config").ordered
+      expect(transport).to receive(:command).with("interface Te1/0/29").ordered
+      expect(transport).to receive(:command).with("switchport mode general").ordered
+      expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
+      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+    end
+
+    it "should update allowed untagged vlan traffic" do
+      vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_update_untagged_traffic.out")
+      transport.stub(:command).with("show running-config interface Te1/0/29").and_return(vlan_info)
+      expect(transport).to receive(:command).with("config").ordered
+      expect(transport).to receive(:command).with("interface Te1/0/29").ordered
+      expect(transport).to receive(:command).with("switchport mode general").ordered
+      expect(transport).to receive(:command).with("switchport general allowed vlan remove 30").ordered
+      expect(transport).to receive(:command).with("config").ordered
+      expect(transport).to receive(:command).with("interface Te1/0/29").ordered
+      expect(transport).to receive(:command).with("switchport mode general").ordered
+      expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
+      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+    end
+
+    it "should remove unnecessary allowed vlans to traffic" do
+      vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_multi_untagged_traffic.out")
+      #switchport general allowed vlan add 29,30
+      transport.stub(:command).with("show running-config interface Te1/0/29").and_return(vlan_info)
+      expect(transport).to receive(:command).with("config").ordered
+      expect(transport).to receive(:command).with("interface Te1/0/29").ordered
+      expect(transport).to receive(:command).with("switchport mode general").ordered
+      expect(transport).to receive(:command).with("switchport general allowed vlan remove 30").ordered
+      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+    end
+
+    it "should not add to traffic if already exists" do
+      vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_untagged_traffic.out")
+      transport.stub(:command).with("show running-config interface Te1/0/29").and_return(vlan_info)
+    end
+  end
 end
+
