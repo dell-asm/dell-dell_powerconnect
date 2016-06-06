@@ -59,8 +59,8 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
     end
 
     base.register_param 'hostname' do
-      match /^hostname\s+(\S+)$/
-      cmd 'show running-config | grep hostname'
+      match /^System Name:\s+(\S+)$/
+      cmd 'show system | include "System Name"'
     end
 
     base.register_param 'defaultdomain' do
