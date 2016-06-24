@@ -186,7 +186,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
     tagged_vlans = existing_vlans[0]
     value = value.split(",").map(&:to_i)
     current_vlans = tagged_vlans
-    transport.command("config")
+    transport.command("exit") # Bring us back to configure state
 
     vlans_to_remove = current_vlans - value
     vlans_to_remove.each do |vlan|
@@ -194,6 +194,7 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
       transport.command("switchport mode general")
       transport.command("switchport general allowed vlan remove #{vlan}")
+      transport.command("exit")
     end
 
     vlans_to_add = value - current_vlans
@@ -202,11 +203,11 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
       transport.command("switchport mode general")
       transport.command("switchport general allowed vlan add #{val} tagged")
-      transport.command("exit")
-      transport.command("exit")
+      transport.command("exit") #exit from interface
     end
-    transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+    transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}") # Revert back to original state
   end
+
 
   def self.update_untagged_vlans(transport, existing_vlans, interface_val, value)
     untagged_vlans = existing_vlans[1]
@@ -221,13 +222,12 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
 
     untagged_vlan = vlans_to_add.first
     Puppet.debug("Adding vlans #{untagged_vlan}")
-    transport.command("config")
+    transport.command("exit") # bring us back to config state
     transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
     transport.command("switchport mode general")
     transport.command("switchport general pvid #{untagged_vlan}")
-    transport.command("exit")
-    transport.command("exit")
-    transport.command("show running-config interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
+    transport.command("exit") # bring us back to config state
+    transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}") # Bring back to original state
   end
 
   def self.update_traffic_allowed_vlans(transport, existing_vlans, interface_val, value)
@@ -250,22 +250,25 @@ module PuppetX::DellPowerconnect::Model::Interface::Base
       end
     end
 
+    transport.command("exit") # bring us back to config state
+
     vlans_to_remove = vlan_allowed - value
     vlans_to_remove.each do |vlan|
       Puppet.debug("Removing switchport allowed vlans #{vlan}")
-      transport.command("config")
       transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
       transport.command("switchport mode general")
       transport.command("switchport general allowed vlan remove #{vlan}")
+      transport.command("exit")
     end
 
     vlans_to_add = value - vlan_allowed
     vlans_to_add.each do |vlan|
       Puppet.debug("Adding switchport allowed vlan #{vlan}")
-      transport.command("config")
       transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
       transport.command("switchport mode general")
       transport.command("switchport general allowed vlan add #{vlan}")
+      transport.command("exit")
     end
+    transport.command("interface #{interface_val[0]}/#{interface_val[1]}/#{interface_val[2]}")
   end
 end
