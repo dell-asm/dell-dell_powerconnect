@@ -13,14 +13,23 @@ Puppet::Type.newtype(:powerconnect_portchannel) do
     end
   end
 
-  newproperty(:allowvlans) do
+  newproperty(:tagged_general_vlans, :array_matching => :all) do
     desc "VLANs to be tagged on to the port-channel"
-    newvalues(/^(\d+(-\d+)?,)*\d+(-\d+)?$/)
   end
 
-  newproperty(:removevlans) do
-    desc "VLANs to be untagged from the port-channel"
-    newvalues(/^(\d+(-\d+)?,)*\d+(-\d+)?$/)
+  newproperty(:untagged_general_vlans, :array_matching => :all) do
+    desc "VLANs to be tagged on general mode to the port-channel"
+  end
+
+  newproperty(:switchport_mode) do
+    desc "Configure the VLAN membership mode of an interface. Valid values are access, trunk, or general."
+    newvalues(:access, :general, :trunk)
+  end
+
+  newproperty(:shutdown) do
+    desc "Disable the interface. Default value is 'false'"
+    defaultto(false)
+    newvalues(true, false)
   end
 
 end
