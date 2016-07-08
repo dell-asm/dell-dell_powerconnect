@@ -276,8 +276,14 @@ module PuppetX::DellPowerconnect::PossibleFacts::Base
       res = Hash.new
       portchannels = Hash.new
       match do |txt|
-        txt.scan(/^(Po[0-9]+)\s+(Active: |Inactive: )([(Te|Gi)[0-9\/]+, ]+)/) do |arr|
-          portchannels[arr[0]] = arr[2]
+        channel = ""
+        txt.split("\n").collect do |line|
+          channel = line.scan(/(Po\d+)/).flatten.first if line.start_with?("Po")
+          port = line.scan(/((?:Te|Fo|Gi)\d+\/\d+\/\d+)/).flatten.first
+          if channel && port
+            portchannels[channel] ||= []
+            portchannels[channel] << port
+          end
         end
         res["portchannelmap"] = portchannels.to_json
         res

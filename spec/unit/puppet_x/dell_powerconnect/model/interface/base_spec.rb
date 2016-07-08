@@ -11,25 +11,25 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
     it "should return a list of tagged and untagged vlans" do
       vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_info.out")
       transport.stub(:command).with("show running-config interface #{interface_name}").and_return(vlan_info)
-      expect(base.show_vlans(transport, interface_type)).to eq([[18, 20, 23, 24, 28], [29]])
+      expect(base.show_vlans(transport, interface_name)).to eq([[18, 20, 23, 24, 28], [29]])
     end
 
     it "should return a empty list of no tagged and existing untagged vlans" do
       vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_notagged_info.out")
       transport.stub(:command).with("show running-config interface #{interface_name}").and_return(vlan_info)
-      expect(base.show_vlans(transport, interface_type)).to eq([[], [29]])
+      expect(base.show_vlans(transport, interface_name)).to eq([[], [29]])
     end
 
     it "should return range of tagged vlans and existing untagged vlans a list" do
       vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_range_info.out")
       transport.stub(:command).with("show running-config interface #{interface_name}").and_return(vlan_info)
-      expect(base.show_vlans(transport, interface_type)).to eq([[18, 20, 23, 24, 25, 28], [29]])
+      expect(base.show_vlans(transport, interface_name)).to eq([[18, 20, 23, 24, 25, 28], [29]])
     end
 
     it "should return an empty tagged and unatagged list when there are no vlans" do
       vlan_info = PuppetSpec.load_fixture("show_interfaces_switchport/vlan_no_info.out")
       transport.stub(:command).with("show running-config interface Te1/0/29").and_return(vlan_info)
-      expect(base.show_vlans(transport, interface_type)).to eq([[], []])
+      expect(base.show_vlans(transport, interface_name)).to eq([[], []])
     end
   end
 
@@ -42,7 +42,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan remove 18").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_tagged_vlans(transport, [[18, 20], [29]], ["Te1", 0, 29], "20")
+      base.update_tagged_vlans(transport, [18, 20], "Te1/0/29", "20")
     end
 
     it "should add tagged vlans" do
@@ -52,7 +52,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan add 20 tagged").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_tagged_vlans(transport, [[], []], ["Te1", 0, 29], "20")
+      base.update_tagged_vlans(transport, [], "Te1/0/29", "20")
     end
 
     it "should unset extra tagged vlans" do
@@ -71,7 +71,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan add 28 tagged").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_tagged_vlans(transport, [[18, 20], [29]], ["Te1", 0, 29], "28")
+      base.update_tagged_vlans(transport, [18, 20], "Te1/0/29", "28")
     end
   end
 
@@ -83,12 +83,12 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general pvid 29").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_untagged_vlans(transport, [[], []], ["Te1", 0, 29], "29")
+      base.update_untagged_vlans(transport, [], "Te1/0/29", "29")
     end
 
     it "should not add untagged vlan when it is already exist" do
       expect(transport).to receive(:command).never
-      base.update_untagged_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+      base.update_untagged_vlans(transport, [29], "Te1/0/29", "29")
     end
 
     it "should set untagged vlans" do
@@ -98,7 +98,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general pvid 29").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_untagged_vlans(transport, [[], [30]], ["Te1", 0, 29], "29")
+      base.update_untagged_vlans(transport, [30], "Te1/0/29", "29")
     end
   end
 
@@ -112,7 +112,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+      base.update_traffic_allowed_vlans(transport, "Te1/0/29", "29")
     end
 
     it "should update allowed untagged vlan traffic" do
@@ -128,7 +128,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan add 29").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+      base.update_traffic_allowed_vlans(transport, "Te1/0/29", "29")
     end
 
     it "should remove unnecessary allowed vlans to traffic" do
@@ -141,7 +141,7 @@ describe PuppetX::DellPowerconnect::Model::Interface::Base do
       expect(transport).to receive(:command).with("switchport general allowed vlan remove 30").ordered
       expect(transport).to receive(:command).with("exit").ordered
       expect(transport).to receive(:command).with("interface Te1/0/29").ordered
-      base.update_traffic_allowed_vlans(transport, [[], [29]], ["Te1", 0, 29], "29")
+      base.update_traffic_allowed_vlans(transport, "Te1/0/29", "29")
     end
 
     it "should not add to traffic if already exists" do
